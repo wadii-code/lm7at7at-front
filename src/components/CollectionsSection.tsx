@@ -20,8 +20,8 @@ export function CollectionsSection() {
         </motion.div>
 
         {/* Collections Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {collections.map((collection, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {collections.slice(0, 2).map((collection, index) => (
             <motion.a
               key={collection.id}
               href={collection.href}
@@ -29,7 +29,7 @@ export function CollectionsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-gray-100"
+              className="relative group aspect-square md:aspect-[4/5] rounded-xl overflow-hidden bg-gray-100"
             >
               <img
                 src={collection.image}
@@ -40,9 +40,9 @@ export function CollectionsSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               
               {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white font-bold text-lg mb-1">
-                  {collection.nameAr}
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h3 className="text-white font-bold text-2xl mb-2">
+                  {collection.name}
                 </h3>
                 <div className="flex items-center gap-2 text-white/80 text-sm group-hover:text-white transition-colors">
                   <span>See collection</span>
