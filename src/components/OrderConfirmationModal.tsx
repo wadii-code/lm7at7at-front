@@ -36,7 +36,7 @@ export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationMod
       items: items,
       total: getTotalPrice(),
       date: new Date().toISOString(),
-      status: 'Pending',
+      status: 'pending',
     };
     addOrder(newOrder);
     toast.success('تم استلام طلبك بنجاح!');

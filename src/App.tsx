@@ -14,7 +14,6 @@ import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
 import { AdminAddProductPage } from '@/pages/admin/AdminAddProductPage';
 import { AdminEditProductPage } from '@/pages/admin/AdminEditProductPage';
 import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
-import { WelcomeModal } from '@/components/WelcomeModal';
 import './App.css';
 
 // Protected Route Component
@@ -31,7 +30,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <BrowserRouter>
-      <WelcomeModal />
       <Routes>
         {/* Main Routes */}
         <Route path="/" element={<MainLayout />}>

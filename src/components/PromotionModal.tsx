@@ -4,19 +4,28 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, X } from 'lucide-react';
 
+const VISITED_KEY = 'has_visited_before';
+
 const slides = [
   {
     image: '/images/1.jpeg',
-    title: 'Discover Your Signature Style',
-    subtitle: 'Explore our new collection of premium T-shirts.',
-    buttonText: 'Shop Now',
+    title: '1 T-shirt',
+    subtitle: 'Prix: 149dh - Qualité premium, confort exceptionnel',
+    buttonText: 'Commander',
     url: '/products',
   },
   {
     image: '/images/2.jpeg',
-    title: 'Unmatched Quality & Comfort',
-    subtitle: 'Crafted for the perfect fit, designed to last.',
-    buttonText: 'Explore Designs',
+    title: '2 T-shirts',
+    subtitle: 'Prix: 269dh - Économisez 29dh !',
+    buttonText: 'Commander',
+    url: '/products',
+  },
+  {
+    image: '/images/black.jpeg',
+    title: '3 T-shirts',
+    subtitle: 'Prix: 349dh - Livraison gratuite incluse !',
+    buttonText: 'Commander',
     url: '/products',
   },
 ];
@@ -32,19 +41,30 @@ export function PromotionModal() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // Open the modal automatically after a short delay
-    const openTimer = setTimeout(() => setIsOpen(true), 1500);
+    // Check if user has visited before
+    const hasVisited = localStorage.getItem(VISITED_KEY);
     
-    // Auto-play slides
-    const slideTimer = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 5000);
+    if (!hasVisited) {
+      // Open the modal automatically after a short delay for first-time visitors
+      const openTimer = setTimeout(() => {
+        setIsOpen(true);
+        // Mark as visited
+        localStorage.setItem(VISITED_KEY, 'true');
+      }, 1500);
+      
+      // Auto-play slides
+      const slideTimer = setInterval(() => {
+        setIndex((prevIndex) => (prevIndex + 1) % slides.length);
+      }, 5000);
 
-    return () => {
-      clearTimeout(openTimer);
-      clearInterval(slideTimer);
-    };
+      return () => {
+        clearTimeout(openTimer);
+        clearInterval(slideTimer);
+      };
+    }
+    // If hasVisited is true, do nothing - modal stays closed
   }, []);
+
 
   if (!isOpen) {
     return null;
