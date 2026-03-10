@@ -8,21 +8,21 @@ const VISITED_KEY = 'has_visited_before';
 
 const slides = [
   {
-    image: '/images/1.jpeg',
+    image: '/images/pink.jpeg',
     title: '1 T-shirt',
     subtitle: 'Prix: 149dh - Qualité premium, confort exceptionnel',
     buttonText: 'Commander',
     url: '/products',
   },
   {
-    image: '/images/2.jpeg',
+    image: '/images/black.jpeg',
     title: '2 T-shirts',
     subtitle: 'Prix: 269dh - Économisez 29dh !',
     buttonText: 'Commander',
     url: '/products',
   },
   {
-    image: '/images/black.jpeg',
+    image: '/images/white.jpeg',
     title: '3 T-shirts',
     subtitle: 'Prix: 349dh - Livraison gratuite incluse !',
     buttonText: 'Commander',

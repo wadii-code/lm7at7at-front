@@ -8,7 +8,9 @@ import {
   ShoppingCart, 
   LogOut,
   ChevronRight,
-  Store
+  Store,
+  Plus,
+  Folder
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -36,6 +38,8 @@ export function AdminLayout() {
   const navItems = [
     { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
     { href: '/admin/products', label: 'المنتجات', icon: Package },
+    { href: '/admin/products/add', label: 'إضافة منتج', icon: Plus },
+    { href: '/admin/collections', label: 'المجموعات', icon: Folder },
     { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
   ];
 

@@ -64,9 +64,9 @@ export function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600 mt-1">
-          نظرة عامة على أداء المتجر
+          An overview of your store's performance
         </p>
       </div>
 
@@ -113,8 +113,8 @@ export function AdminDashboardPage() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl p-6 shadow-card">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">إجراءات سريعة</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             to="/admin/products/add"
             className="flex items-center gap-4 p-4 bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors"
@@ -123,8 +123,8 @@ export function AdminDashboardPage() {
               <Package className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-gray-900">إضافة منتج</p>
-              <p className="text-sm text-gray-500">إضافة منتج جديد للمتجر</p>
+              <p className="font-bold text-gray-900">Add Product</p>
+              <p className="text-sm text-gray-500">Add a new product to the store</p>
             </div>
           </Link>
           
@@ -136,8 +136,8 @@ export function AdminDashboardPage() {
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-gray-900">إدارة المنتجات</p>
-              <p className="text-sm text-gray-500">تعديل أو حذف المنتجات</p>
+              <p className="font-bold text-gray-900">Manage Products</p>
+              <p className="text-sm text-gray-500">Edit or delete products</p>
             </div>
           </Link>
           
@@ -149,8 +149,21 @@ export function AdminDashboardPage() {
               <ShoppingCart className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-gray-900">الطلبات</p>
-              <p className="text-sm text-gray-500">عرض وإدارة الطلبات</p>
+              <p className="font-bold text-gray-900">Orders</p>
+              <p className="text-sm text-gray-500">View and manage orders</p>
+            </div>
+          </Link>
+
+          <Link
+            to="/admin/orders/delivered"
+            className="flex items-center gap-4 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+          >
+            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">Delivered Orders</p>
+              <p className="text-sm text-gray-500">Manage delivered orders</p>
             </div>
           </Link>
         </div>
@@ -159,12 +172,12 @@ export function AdminDashboardPage() {
       {/* Recent Products */}
       <div className="bg-white rounded-xl p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">أحدث المنتجات</h2>
+          <h2 className="text-xl font-bold text-gray-900">Recent Products</h2>
           <Link
             to="/admin/products"
             className="text-primary hover:text-primary-dark font-medium"
           >
-            عرض الكل
+            View All
           </Link>
         </div>
         
@@ -173,33 +186,33 @@ export function AdminDashboardPage() {
             <thead>
               <tr className="border-b">
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  المنتج
+                  Product
                 </th>
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  السعر
+                  Price
                 </th>
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  المخزون
+                  Stock
                 </th>
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  التقييم
+                  Rating
                 </th>
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  الحالة
+                  Status
                 </th>
               </tr>
             </thead>
             <tbody>
-              {recentProducts.map((product) => (
+                {recentProducts.map((product) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <img
-                        src={product.images[0]}
+                        src={product.thumbnail || product.images[0]}
                         alt={product.nameAr}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
-                      <span className="font-medium">{product.nameAr}</span>
+                      <span className="font-medium">{product.name}</span>
                     </div>
                   </td>
                   <td className="py-3 px-4">{product.price} درهم</td>
@@ -228,7 +241,7 @@ export function AdminDashboardPage() {
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {product.inStock ? 'متوفر' : 'غير متوفر'}
+                      {product.inStock ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
                 </tr>
@@ -247,10 +260,10 @@ export function AdminDashboardPage() {
             </div>
             <div>
               <h3 className="font-bold text-orange-900">
-                منتجات منخفضة المخزون
+                Low Stock Products
               </h3>
               <p className="text-orange-700">
-                يوجد {lowStockProducts} منتجات تحتاج إلى إعادة تعبئة المخزون
+                There are {lowStockProducts} products that need to be restocked
               </p>
             </div>
           </div>

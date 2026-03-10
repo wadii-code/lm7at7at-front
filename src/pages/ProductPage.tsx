@@ -36,8 +36,17 @@ export function ProductPage() {
   const [selectedCategory, setSelectedCategory] = useState(category || 'all');
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [debouncedPriceRange, setDebouncedPriceRange] = useState({ min: '', max: '' });
   const [sortBy, setSortBy] = useState<string>('newest');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Debounce price range changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPriceRange(priceRange);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [priceRange]);
 
   // Apply filters when they change
   useEffect(() => {
@@ -53,16 +62,16 @@ export function ProductPage() {
       newFilters.sizes = selectedSizes;
     }
 
-    if (priceRange.min) {
-      newFilters.minPrice = parseInt(priceRange.min);
+    if (debouncedPriceRange.min) {
+      newFilters.minPrice = parseInt(debouncedPriceRange.min);
     }
 
-    if (priceRange.max) {
-      newFilters.maxPrice = parseInt(priceRange.max);
+    if (debouncedPriceRange.max) {
+      newFilters.maxPrice = parseInt(debouncedPriceRange.max);
     }
 
     setFilters(newFilters);
-  }, [selectedCategory, selectedSizes, priceRange, sortBy, setFilters]);
+  }, [selectedCategory, selectedSizes, debouncedPriceRange, sortBy, setFilters]);
 
   const filteredProducts = getFilteredProducts();
 

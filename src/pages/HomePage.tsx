@@ -16,6 +16,9 @@ export function HomePage() {
     <div>
       <HeroSection />
       
+      {/* Collections - Right after Hero */}
+      <CollectionsSection />
+
       {/* Featured Products */}
       <FeaturedProducts />
 

@@ -14,6 +14,9 @@ import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
 import { AdminAddProductPage } from '@/pages/admin/AdminAddProductPage';
 import { AdminEditProductPage } from '@/pages/admin/AdminEditProductPage';
 import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
+import { AdminDeliveredOrdersPage } from '@/pages/admin/AdminDeliveredOrdersPage';
+import { AdminCollectionsPage } from '@/pages/admin/AdminCollectionsPage';
+import { AdminAddCollectionPage } from '@/pages/admin/AdminAddCollectionPage';
 import './App.css';
 
 // Protected Route Component
@@ -82,6 +85,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminOrdersPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="orders/delivered" 
+            element={
+              <ProtectedRoute>
+                <AdminDeliveredOrdersPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="collections" 
+            element={
+              <ProtectedRoute>
+                <AdminCollectionsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="collections/add" 
+            element={
+              <ProtectedRoute>
+                <AdminAddCollectionPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="collections/edit/:id" 
+            element={
+              <ProtectedRoute>
+                <AdminAddCollectionPage />
               </ProtectedRoute>
             } 
           />

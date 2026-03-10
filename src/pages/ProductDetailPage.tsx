@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -33,15 +33,21 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
+  useEffect(() => {
+    if (product && product.images.length > 0) {
+      setActiveImage(0);
+    }
+  }, [product]);
+
   if (!product) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            المنتج غير موجود
+            Product Not Found
           </h1>
           <Link to="/products">
-            <Button>العودة للمنتجات</Button>
+            <Button>Back to Products</Button>
           </Link>
         </div>
       </div>
@@ -50,15 +56,15 @@ export function ProductDetailPage() {
 
   const relatedProducts = products
     .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+    .slice(0, 8);
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error('الرجاء اختيار المقاس');
+      toast.error('Please select a size');
       return;
     }
     if (!selectedColor && product.colors.length > 0) {
-      toast.error('الرجاء اختيار اللون');
+      toast.error('Please select a color');
       return;
     }
 
@@ -68,20 +74,20 @@ export function ProductDetailPage() {
       addItem(product, selectedSize, colorToUse);
     }
     
-    toast.success(`تمت إضافة ${quantity} ${product.nameAr} إلى السلة`);
+    toast.success(`${quantity} x ${product.name} added to cart`);
   };
 
   const handleShare = async () => {
     try {
       await navigator.share({
-        title: product.nameAr,
-        text: product.descriptionAr,
+        title: product.name,
+        text: product.description,
         url: window.location.href,
       });
     } catch {
       // Fallback - copy to clipboard
       navigator.clipboard.writeText(window.location.href);
-      toast.success('تم نسخ الرابط');
+      toast.success('Link copied to clipboard');
     }
   };
 
@@ -90,11 +96,11 @@ export function ProductDetailPage() {
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-primary">الرئيسية</Link>
+          <Link to="/" className="hover:text-primary">Home</Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to="/products" className="hover:text-primary">المنتجات</Link>
+          <Link to="/products" className="hover:text-primary">Products</Link>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900">{product.nameAr}</span>
+          <span className="text-gray-900">{product.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -102,30 +108,34 @@ export function ProductDetailPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
+            className="flex flex-col gap-4"
           >
-            <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden">
-              <img
+            <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-lg">
+              <motion.img
+                key={activeImage} // Animate when activeImage changes
                 src={product.images[activeImage]}
-                alt={product.nameAr}
+                alt={product.name}
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
                 className="w-full h-full object-cover"
               />
             </div>
             {product.images.length > 1 && (
-              <div className="flex gap-2">
+              <div className="grid grid-cols-5 gap-3">
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImage(idx)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                       activeImage === idx
-                        ? 'border-primary'
-                        : 'border-transparent'
+                        ? 'border-primary scale-105 shadow-md'
+                        : 'border-transparent hover:border-gray-300'
                     }`}
                   >
                     <img
                       src={img}
-                      alt={`${product.nameAr} - ${idx + 1}`}
+                      alt={`${product.name} - thumbnail ${idx + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -143,24 +153,24 @@ export function ProductDetailPage() {
             {/* Title & Rating */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {product.nameAr}
+                {product.name}
               </h1>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   <span className="font-bold">{product.rating}</span>
                   <span className="text-gray-500">
-                    ({product.reviewCount} تقييم)
+                    ({product.reviewCount} reviews)
                   </span>
                 </div>
                 {product.isNew && (
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                    جديد
+                    New
                   </span>
                 )}
                 {product.isOnSale && (
                   <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-                    خصم
+                    Sale
                   </span>
                 )}
               </div>
@@ -169,39 +179,39 @@ export function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-3xl font-bold text-primary">
-                {product.price} درهم
+                ${product.price}
               </span>
               {product.originalPrice && (
                 <span className="text-xl text-gray-400 line-through">
-                  {product.originalPrice} درهم
+                  ${product.originalPrice}
                 </span>
               )}
               {product.originalPrice && (
                 <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-                  وفّر {product.originalPrice - product.price} درهم
+                  Save ${product.originalPrice - product.price}
                 </span>
               )}
             </div>
 
             {/* Description */}
             <p className="text-gray-600 leading-relaxed">
-              {product.descriptionAr}
+              {product.description}
             </p>
 
             {/* Size Selection */}
             <div>
               <label className="block font-bold text-gray-900 mb-3">
-                المقاس: <span className="text-primary">{selectedSize}</span>
+                Size: <span className="text-primary">{selectedSize}</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 rounded-lg font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${
                       selectedSize === size
-                        ? 'bg-primary text-white ring-2 ring-primary ring-offset-2'
-                        : 'bg-gray-100 hover:bg-gray-200'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-primary'
                     }`}
                   >
                     {size}
@@ -214,174 +224,99 @@ export function ProductDetailPage() {
             {product.colors.length > 0 && (
               <div>
                 <label className="block font-bold text-gray-900 mb-3">
-                  اللون: <span className="text-primary">{selectedColor}</span>
+                  Color: <span className="text-primary">{selectedColor}</span>
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {product.colors.map((color) => (
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
                         selectedColor === color.name
-                          ? 'border-primary ring-2 ring-primary ring-offset-2'
-                          : 'border-gray-300'
+                          ? 'border-primary scale-110 shadow-md'
+                          : 'border-gray-200'
                       }`}
                       style={{ backgroundColor: color.hex }}
-                      title={color.nameAr}
+                      title={color.name}
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Quantity */}
-            <div>
-              <label className="block font-bold text-gray-900 mb-3">
-                الكمية
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            {/* Quantity & Add to Cart */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex items-center border-2 border-gray-200 rounded-lg">
+                <button 
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="p-3 text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="w-12 text-center font-bold text-lg">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                <span className="px-6 font-bold text-lg">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(q => q + 1)}
+                  className="p-3 text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
+              <Button onClick={handleAddToCart} size="lg" className="flex-1">
+                Add to Cart
+              </Button>
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleAddToCart}
-                className="flex-1 bg-primary hover:bg-primary-dark text-white py-6 text-lg font-bold"
-              >
-                أضف إلى السلة
-              </Button>
-              <Button
+            {/* Wishlist & Share */}
+            <div className="flex items-center gap-4">
+              <Button 
                 variant="outline"
                 onClick={() => toggleWishlist(product.id)}
-                className={`w-14 h-14 ${
-                  isInWishlist(product.id)
-                    ? 'text-red-500 border-red-500'
-                    : ''
-                }`}
+                className="flex-1"
               >
-                <Heart
-                  className="w-6 h-6"
-                  fill={isInWishlist(product.id) ? 'currentColor' : 'none'}
-                />
+                <Heart className={`w-5 h-5 mr-2 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                {isInWishlist(product.id) ? 'In Wishlist' : 'Add to Wishlist'}
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleShare}
-                className="w-14 h-14"
-              >
-                <Share2 className="w-6 h-6" />
+              <Button variant="outline" onClick={handleShare} className="flex-1">
+                <Share2 className="w-5 h-5 mr-2" />
+                Share
               </Button>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t">
-              <div className="text-center">
-                <Truck className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="text-sm text-gray-600">توصيل سريع</p>
+            {/* Guarantees */}
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center gap-3">
+                <Truck className="w-6 h-6 text-primary" />
+                <span className="text-gray-700">Free & Fast Shipping</span>
               </div>
-              <div className="text-center">
-                <Shield className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="text-sm text-gray-600">جودة مضمونة</p>
+              <div className="flex items-center gap-3">
+                <Shield className="w-6 h-6 text-primary" />
+                <span className="text-gray-700">Secure Payment</span>
               </div>
-              <div className="text-center">
-                <RotateCcw className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="text-sm text-gray-600">إرجاع سهل</p>
+              <div className="flex items-center gap-3">
+                <RotateCcw className="w-6 h-6 text-primary" />
+                <span className="text-gray-700">30-Day Return Policy</span>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Product Details Tabs */}
+        {/* Tabs for Details & Reviews */}
         <div className="mt-16">
-          <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b rounded-none bg-transparent">
-              <TabsTrigger value="description" className="text-lg">
-                الوصف
-              </TabsTrigger>
-              <TabsTrigger value="details" className="text-lg">
-                التفاصيل
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="text-lg">
-                التقييمات ({product.reviewCount})
-              </TabsTrigger>
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Product Details</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="description" className="mt-6">
-              <div className="prose max-w-none">
-                <p className="text-gray-600 leading-relaxed text-lg">
-                  {product.descriptionAr}
-                </p>
-                <p className="text-gray-600 leading-relaxed mt-4">
-                  {product.description}
-                </p>
-              </div>
+            <TabsContent value="details" className="py-6 px-4">
+              <p className="text-gray-600 leading-relaxed">
+                {product.description}
+              </p>
+              {/* Add more details here if needed */}
             </TabsContent>
-            
-            <TabsContent value="details" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h3 className="font-bold text-gray-900 mb-4">معلومات المنتج</h3>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">التصنيف:</span>
-                      <span className="font-medium">{product.category}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">المقاسات المتوفرة:</span>
-                      <span className="font-medium">{product.sizes.join(', ')}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">الألوان:</span>
-                      <span className="font-medium">
-                        {product.colors.map((c) => c.nameAr).join(', ')}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">المخزون:</span>
-                      <span className="font-medium">
-                        {product.inStock ? 'متوفر' : 'غير متوفر'}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h3 className="font-bold text-gray-900 mb-4">الوسوم</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-white px-3 py-1 rounded-full text-sm text-gray-600 border"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="reviews" className="mt-6">
-              <div className="text-center py-12">
-                <p className="text-gray-500">
-                  تقييم المستخدمين قريباً...
-                </p>
-              </div>
+            <TabsContent value="reviews" className="py-6 px-4">
+              <h3 className="text-xl font-bold mb-4">Customer Reviews</h3>
+              {/* Reviews would be mapped here */}
+              <p className="text-gray-500">No reviews yet.</p>
             </TabsContent>
           </Tabs>
         </div>
@@ -389,12 +324,10 @@ export function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">
-              منتجات مشابهة
-            </h2>
+            <h2 className="text-2xl font-bold text-center mb-8">You Might Also Like</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((p, idx) => (
-                <ProductCard key={p.id} product={p} index={idx} />
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>

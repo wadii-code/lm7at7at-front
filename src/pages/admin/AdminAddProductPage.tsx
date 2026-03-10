@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,10 +50,11 @@ export function AdminAddProductPage() {
     isNew: false,
     isBestseller: false,
     isOnSale: false,
-    imageFile: null as File | null,
-    rating: '',
+    imageUrls: [] as string[],
+    thumbnail: '',
   });
-  const [imagePreview, setImagePreview] = useState('');
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
 
   const toggleSize = (size: string) => {
     setFormData((prev) => ({
@@ -74,28 +75,68 @@ export function AdminAddProductPage() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, imageFile: file }));
-      setImagePreview(URL.createObjectURL(file));
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const totalImages = formData.imageUrls.length + files.length;
+
+      if (totalImages > 5) {
+        toast.error('You can upload a maximum of 5 images.');
+        return;
+      }
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          setFormData(prev => ({
+            ...prev,
+            imageUrls: [...prev.imageUrls, dataUrl]
+          }));
+          setImagePreviews(prev => [...prev, dataUrl]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
-  // Clean up the object URL to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-    };
-  }, [imagePreview]);
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index)
+    }));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setFormData(prev => ({
+          ...prev,
+          thumbnail: dataUrl
+        }));
+        setThumbnailPreview(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveThumbnail = () => {
+    setFormData(prev => ({
+      ...prev,
+      thumbnail: ''
+    }));
+    setThumbnailPreview('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.name || !formData.description || !formData.price) {
-      toast.error('Please fill in all required fields');
+    if ((!formData.name && !formData.nameAr) || (!formData.description && !formData.descriptionAr) || !formData.price) {
+      toast.error('Please fill in all required fields (Name, Description, Price)');
       return;
     }
 
@@ -109,8 +150,8 @@ export function AdminAddProductPage() {
         return;
     }
 
-    if (!formData.imageFile) {
-      toast.error('Please select a product image');
+    if (formData.imageUrls.length === 0) {
+      toast.error('Please select at least one product image');
       return;
     }
 
@@ -131,13 +172,14 @@ export function AdminAddProductPage() {
         originalPrice: formData.originalPrice
           ? parseFloat(formData.originalPrice)
           : undefined,
-        images: [`/images/${formData.imageFile!.name}`],
+        images: formData.imageUrls,
+        thumbnail: formData.thumbnail || formData.imageUrls[0] || undefined,
         category: formData.category,
         sizes: formData.sizes,
         colors: selectedColors.length > 0 ? selectedColors : [availableColors[0]],
         inStock: parseInt(formData.stockQuantity) > 0,
         stockQuantity: parseInt(formData.stockQuantity) || 0,
-        rating: parseFloat(formData.rating) || 0,
+        rating: 0,
         reviewCount: 0,
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
         isNew: formData.isNew,
@@ -183,20 +225,42 @@ export function AdminAddProductPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl p-6 shadow-card space-y-6"
           >
-            <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
-            
+            <h2 className="text-xl font-bold text-gray-900">Product Images</h2>
             <div>
               <label className="block font-medium text-gray-700 mb-2">
-                Product Name <span className="text-red-500">*</span>
+                Upload Images <span className="text-red-500">*</span>
+                <span className="text-sm text-gray-500 ml-2">(Up to 5 images)</span>
               </label>
               <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="e.g., Premium Cotton T-Shirt"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                disabled={formData.imageUrls.length >= 5}
               />
             </div>
+
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative group aspect-square">
+                    <img
+                      src={preview}
+                      alt={`Product Preview ${index + 1}`}
+                      className="w-full h-full rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div>
               <label className="block font-medium text-gray-700 mb-2">
@@ -225,10 +289,10 @@ export function AdminAddProductPage() {
                 Note: After adding the product, you must manually move the image file to the{' '}
                 <code className="text-xs bg-gray-100 p-1 rounded">public/images</code> folder.
               </p>
-              {imagePreview && (
+              {imagePreviews.length > 0 && (
                 <div className="mt-4">
                   <img
-                    src={imagePreview}
+                    src={imagePreviews[0]}
                     alt="Image Preview"
                     className="w-32 h-32 object-cover rounded-lg border"
                   />
@@ -262,6 +326,41 @@ export function AdminAddProductPage() {
                 placeholder="وصف تفصيلي للمنتج..."
                 rows={4}
               />
+            </div>
+
+            {/* Thumbnail Image - Separate from gallery */}
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">صورة المصغرة (لصفحة المنتجات)</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                هذه الصورة تظهر في الصفحة الرئيسية وقوائم المنتجات
+              </p>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  صورة مصغرة
+                </label>
+                <Input
+                  type="file"
+                  accept="image/png, image/jpeg, image/gif"
+                  onChange={handleThumbnailChange}
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                />
+                {thumbnailPreview && (
+                  <div className="mt-4 flex items-center gap-4">
+                    <img
+                      src={thumbnailPreview}
+                      alt="Thumbnail Preview"
+                      className="w-24 h-24 object-cover rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveThumbnail}
+                      className="text-red-600 hover:text-red-700 text-sm"
+                    >
+                      إزالة الصورة
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
 
@@ -302,23 +401,6 @@ export function AdminAddProductPage() {
                   placeholder="299"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block font-medium text-gray-700 mb-2">
-                Rating (0-5)
-              </label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={formData.rating}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, rating: e.target.value }))
-                }
-                placeholder="4.8"
-              />
             </div>
 
             <div>

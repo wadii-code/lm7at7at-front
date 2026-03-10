@@ -7,6 +7,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   images: string[];
+  thumbnail?: string; // Separate image for main page display
   category: string;
   subcategory?: string;
   sizes: string[];

@@ -128,7 +128,7 @@ export function AdminProductsPage() {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <img
-                        src={product.images[0]}
+                        src={product.thumbnail || product.images[0]}
                         alt={product.nameAr}
                         className="w-12 h-12 rounded-lg object-cover"
                       />

@@ -19,7 +19,7 @@ export function Footer() {
   ];
 
   const socialLinks = [
-      { icon: Instagram, href: 'https://www.instagram.com/wadiiluv/', label: 'Instagram' }
+      { icon: Instagram, href: 'https://www.instagram.com/lm7at7at/', label: 'Instagram' }
 ];
   
 

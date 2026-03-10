@@ -27,6 +27,7 @@ interface OrderState {
   orders: Order[];
   addOrder: (order: Order) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  removeOrder: (orderId: string) => void;
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -42,6 +43,10 @@ export const useOrderStore = create<OrderState>()(
           orders: state.orders.map((order) =>
             order.id === orderId ? { ...order, status } : order
           ),
+        })),
+      removeOrder: (orderId) =>
+        set((state) => ({
+          orders: state.orders.filter((order) => order.id !== orderId),
         })),
     }),
     {

@@ -28,12 +28,12 @@ export function AdminOrdersPage() {
   return (
     <div className="space-y-6">
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">طلبات الزبائن</h1>
+        <h1 className="text-2xl font-bold mb-4">Customer Orders</h1>
         
         <div className="flex items-center mb-4 space-x-4">
           <input
             type="text"
-            placeholder="...ابحث عن طريق اسم الزبون او رقم الهاتف"
+            placeholder="Search by customer name or phone number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border p-2 rounded-md w-1/3"
@@ -43,12 +43,12 @@ export function AdminOrdersPage() {
             onChange={(e) => setStatusFilter(e.target.value as Order['status'] | 'all')}
             className="border p-2 rounded-md"
           >
-            <option value="all">كل الحالات</option>
-            <option value="Pending">قيد الانتظار</option>
-            <option value="Confirmed">مؤكد</option>
-            <option value="Shipped">تم الشحن</option>
-            <option value="Delivered">تم التوصيل</option>
-            <option value="Cancelled">ملغى</option>
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
 
@@ -56,15 +56,15 @@ export function AdminOrdersPage() {
           <table className="min-w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">وقت التأكيد</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">رقم الطلب</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">اسم الزبون</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">رقم الهاتف</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">العنوان</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">عدد المنتجات</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">السعر الإجمالي</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">التاريخ</th>
-                <th className="p-3 text-left text-sm font-semibold text-gray-600">الحالة</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Confirmation Time</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Order Number</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Customer Name</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Phone Number</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Address</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Products</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Total Price</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Date</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -89,11 +89,11 @@ export function AdminOrdersPage() {
                         order.status === 'delivered' ? 'bg-green-500' : 'bg-red-500'
                       }`}
                     >
-                      <option value="Pending">قيد الانتظار</option>
-                      <option value="Confirmed">مؤكد</option>
-                      <option value="Shipped">تم الشحن</option>
-                      <option value="Delivered">تم التوصيل</option>
-                      <option value="Cancelled">ملغى</option>
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
                 </tr>

@@ -52,7 +52,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Image */}
           <div className="relative aspect-square bg-gray-50 overflow-hidden">
             <img
-              src={product.images[0]}
+              src={product.thumbnail || product.images[0]}
               alt={product.nameAr}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />

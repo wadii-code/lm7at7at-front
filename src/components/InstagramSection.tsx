@@ -33,7 +33,7 @@ export function HeroSection() {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 5000); // Change slide every 5 seconds
+    }, 5000); 
 
     return () => clearInterval(timer);
   }, []);
