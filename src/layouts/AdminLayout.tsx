@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { useProductStore } from '@/store/productStore';
+import { useCollectionStore } from '@/store/collectionStore';
 import { 
   LayoutDashboard, 
   Package, 
@@ -19,8 +21,18 @@ export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, isAuthenticated, isAdmin } = useAuthStore();
+  const fetchProducts = useProductStore.getState().fetchProducts;
+  const fetchCollections = useCollectionStore.getState().fetchCollections;
 
   const isLoginPage = location.pathname === '/admin/login';
+
+  useEffect(() => {
+    // Load data when entering admin area (not login page)
+    if (!isLoginPage) {
+      fetchProducts();
+      fetchCollections();
+    }
+  }, [fetchProducts, fetchCollections, isLoginPage]);
 
   useEffect(() => {
     // If user is authenticated and on the login page, redirect to dashboard

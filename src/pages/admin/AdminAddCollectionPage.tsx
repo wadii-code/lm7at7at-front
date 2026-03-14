@@ -60,7 +60,7 @@ export function AdminAddCollectionPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.nameAr || !formData.image || !formData.href) {
@@ -74,15 +74,16 @@ export function AdminAddCollectionPage() {
       return;
     }
 
-    if (isEditing && id) {
-      updateCollection(id, formData);
-      toast.success('تم تحديث المجموعة بنجاح');
+    const success = isEditing && id 
+      ? await updateCollection(id, formData)
+      : await addCollection(formData);
+      
+    if (success) {
+      toast.success(isEditing ? 'تم تحديث المجموعة بنجاح' : 'تم إضافة المجموعة بنجاح');
+      navigate('/admin/collections');
     } else {
-      addCollection(formData);
-      toast.success('تم إضافة المجموعة بنجاح');
+      toast.error('فشل في حفظ المجموعة');
     }
-
-    navigate('/admin/collections');
   };
 
   const availableCategories = [

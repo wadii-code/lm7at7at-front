@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useProductStore } from '@/store/productStore';
+import { useCollectionStore } from '@/store/collectionStore';
 import { MainLayout } from '@/layouts/MainLayout';
 import { HomePage } from '@/pages/HomePage';
 import { ProductPage } from '@/pages/ProductPage';
@@ -31,6 +34,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const fetchCollections = useCollectionStore((state) => state.fetchCollections);
+  
+  useEffect(() => {
+    fetchProducts();
+    fetchCollections();
+  }, [fetchProducts, fetchCollections]);
+
   return (
     <BrowserRouter>
       <Routes>

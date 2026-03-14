@@ -21,17 +21,21 @@ export function AdminProductsPage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
-      product.nameAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      product.name_ar?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      product.name?.toLowerCase().includes(searchQuery?.toLowerCase());
     const matchesCategory =
       filterCategory === 'all' || product.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`هل أنت متأكد من حذف "${name}"؟`)) {
-      deleteProduct(id);
-      toast.success('تم حذف المنتج بنجاح');
+      const success = await deleteProduct(id);
+      if (success) {
+        toast.success('تم حذف المنتج بنجاح');
+      } else {
+        toast.error('فشل حذف المنتج');
+      }
     }
   };
 
@@ -129,12 +133,12 @@ export function AdminProductsPage() {
                     <div className="flex items-center gap-3">
                       <img
                         src={product.thumbnail || product.images[0]}
-                        alt={product.nameAr}
+                        alt={product.name_ar}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
                       <div>
                         <p className="font-medium text-gray-900">
-                          {product.nameAr}
+                          {product.name_ar}
                         </p>
                         <p className="text-sm text-gray-500">{product.name}</p>
                       </div>
@@ -148,9 +152,9 @@ export function AdminProductsPage() {
                   <td className="py-4 px-4">
                     <div>
                       <span className="font-medium">{product.price} درهم</span>
-                      {product.originalPrice && (
+                      {product.original_price && (
                         <span className="text-sm text-gray-400 line-through mr-2">
-                          {product.originalPrice} درهم
+                          {product.original_price} درهم
                         </span>
                       )}
                     </div>
@@ -158,12 +162,12 @@ export function AdminProductsPage() {
                   <td className="py-4 px-4">
                     <span
                       className={`font-medium ${
-                        product.stockQuantity < 10
+                        product.stock_quantity < 10
                           ? 'text-orange-600'
                           : 'text-green-600'
                       }`}
                     >
-                      {product.stockQuantity}
+                      {product.stock_quantity}
                     </span>
                   </td>
                   <td className="py-4 px-4">
@@ -171,19 +175,19 @@ export function AdminProductsPage() {
                       <span>⭐</span>
                       <span className="font-medium">{product.rating}</span>
                       <span className="text-sm text-gray-500">
-                        ({product.reviewCount})
+                        ({product.review_count})
                       </span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        product.inStock
+                        product.in_stock
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {product.inStock ? 'متوفر' : 'غير متوفر'}
+                      {product.in_stock ? 'متوفر' : 'غير متوفر'}
                     </span>
                   </td>
                   <td className="py-4 px-4">
@@ -203,7 +207,7 @@ export function AdminProductsPage() {
                         <Edit2 className="w-4 h-4 text-blue-600" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(product.id, product.nameAr)}
+                        onClick={() => handleDelete(product.id, product.name_ar)}
                         className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                         title="حذف"
                       >

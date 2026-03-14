@@ -145,9 +145,14 @@ export function AdminEditProductPage() {
         isOnSale: formData.isOnSale,
       };
 
-      updateProduct(id!, updates);
-      toast.success('تم تحديث المنتج بنجاح!');
-      navigate('/admin/products');
+      const success = await updateProduct(id!, updates);
+      
+      if (success) {
+        toast.success('تم تحديث المنتج بنجاح!');
+        navigate('/admin/products');
+      } else {
+        toast.error('فشل تحديث المنتج');
+      }
     } catch (error) {
       toast.error('حدث خطأ أثناء تحديث المنتج');
     } finally {

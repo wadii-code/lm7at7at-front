@@ -73,7 +73,7 @@ export function FeaturedProducts() {
           >
             <div className="aspect-square bg-white rounded-3xl overflow-hidden shadow-2xl">
               <img
-                src={featuredProduct.images[0]}
+                src={featuredProduct.thumbnail || featuredProduct.images[0]}
                 alt={featuredProduct.nameAr}
                 className="w-full h-full object-cover"
               />

@@ -120,13 +120,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </h3>
 
             {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <span className="text-yellow-400">⭐</span>
-              <span className="text-sm font-medium">{product.rating}</span>
-              <span className="text-sm text-gray-500">
-                ({product.reviewCount})
-              </span>
-            </div>
+            {product.reviewCount > 0 && (
+              <div className="flex items-center gap-1 mb-2">
+                <span className="text-yellow-400">⭐</span>
+                <span className="text-sm font-medium">{product.rating}</span>
+                <span className="text-sm text-gray-500">
+                  ({product.reviewCount})
+                </span>
+              </div>
+            )}
             
             {/* Price */}
             <div className="flex items-center gap-2">

@@ -32,8 +32,8 @@ const availableColors = [
 
 export function AdminAddProductPage() {
   const navigate = useNavigate();
-  const { addProduct } = useProductStore();
-  
+  const { addProduct, uploadImage } = useProductStore();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -50,9 +50,9 @@ export function AdminAddProductPage() {
     isNew: false,
     isBestseller: false,
     isOnSale: false,
-    imageUrls: [] as string[],
-    thumbnail: '',
   });
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
 
@@ -77,22 +77,19 @@ export function AdminAddProductPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      const totalImages = formData.imageUrls.length + files.length;
+      const totalImages = imageFiles.length + files.length;
 
       if (totalImages > 5) {
         toast.error('You can upload a maximum of 5 images.');
         return;
       }
 
+      setImageFiles(prevFiles => [...prevFiles, ...files]);
+
       files.forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          setFormData(prev => ({
-            ...prev,
-            imageUrls: [...prev.imageUrls, dataUrl]
-          }));
-          setImagePreviews(prev => [...prev, dataUrl]);
+          setImagePreviews(prevPreviews => [...prevPreviews, reader.result as string]);
         };
         reader.readAsDataURL(file);
       });
@@ -100,57 +97,44 @@ export function AdminAddProductPage() {
   };
 
   const handleRemoveImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index)
-    }));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setThumbnailFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const dataUrl = reader.result as string;
-        setFormData(prev => ({
-          ...prev,
-          thumbnail: dataUrl
-        }));
-        setThumbnailPreview(dataUrl);
+        setThumbnailPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleRemoveThumbnail = () => {
-    setFormData(prev => ({
-      ...prev,
-      thumbnail: ''
-    }));
+    setThumbnailFile(null);
     setThumbnailPreview('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if ((!formData.name && !formData.nameAr) || (!formData.description && !formData.descriptionAr) || !formData.price) {
       toast.error('Please fill in all required fields (Name, Description, Price)');
       return;
     }
-
     if (formData.sizes.length === 0) {
       toast.error('Please select at least one size');
       return;
     }
-
     if (formData.colors.length === 0) {
-        toast.error('Please select at least one color');
-        return;
+      toast.error('Please select at least one color');
+      return;
     }
-
-    if (formData.imageUrls.length === 0) {
+    if (imageFiles.length === 0) {
       toast.error('Please select at least one product image');
       return;
     }
@@ -158,38 +142,54 @@ export function AdminAddProductPage() {
     setIsSubmitting(true);
 
     try {
+      // 1. Upload images
+      const uploadedImageUrls = await Promise.all(
+        imageFiles.map(file => uploadImage(file))
+      );
+
+      // 2. Upload thumbnail or use the first image
+      let uploadedThumbnailUrl: string | undefined;
+      if (thumbnailFile) {
+        uploadedThumbnailUrl = await uploadImage(thumbnailFile);
+      } else {
+        uploadedThumbnailUrl = uploadedImageUrls[0];
+      }
+
       const selectedColors = availableColors.filter((c) =>
         formData.colors.includes(c.name)
       );
 
-      const newProduct = {
-        id: `new-${Date.now()}`,
+      // 3. Construct the product object
+      const new_product = {
         name: formData.name || formData.nameAr,
-        nameAr: formData.nameAr,
+        name_ar: formData.nameAr,
         description: formData.description || formData.descriptionAr,
-        descriptionAr: formData.descriptionAr,
+        description_ar: formData.descriptionAr,
         price: parseFloat(formData.price),
-        originalPrice: formData.originalPrice
-          ? parseFloat(formData.originalPrice)
-          : undefined,
-        images: formData.imageUrls,
-        thumbnail: formData.thumbnail || formData.imageUrls[0] || undefined,
+        original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
+        images: uploadedImageUrls,
+        thumbnail: uploadedThumbnailUrl,
         category: formData.category,
         sizes: formData.sizes,
-        colors: selectedColors.length > 0 ? selectedColors : [availableColors[0]],
-        inStock: parseInt(formData.stockQuantity) > 0,
-        stockQuantity: parseInt(formData.stockQuantity) || 0,
+        colors: selectedColors,
+        in_stock: parseInt(formData.stockQuantity) > 0,
+        stock_quantity: parseInt(formData.stockQuantity) || 0,
         rating: 0,
-        reviewCount: 0,
+        review_count: 0,
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        isNew: formData.isNew,
-        isBestseller: formData.isBestseller,
-        isOnSale: formData.isOnSale,
+        is_new: formData.isNew,
+        is_bestseller: formData.isBestseller,
+        is_on_sale: formData.isOnSale,
       };
+      // 4. Call addProduct
+      const success = await addProduct(new_product);
 
-      addProduct(newProduct);
-      toast.success('Product added successfully!');
-      navigate('/admin/products');
+      if (success) {
+        toast.success('Product added successfully!');
+        navigate('/admin/products');
+      } else {
+        toast.error('Failed to add product');
+      }
     } catch (error) {
       console.error('Error adding product:', error);
       toast.error('An error occurred while adding the product');
@@ -226,6 +226,8 @@ export function AdminAddProductPage() {
             className="bg-white rounded-xl p-6 shadow-card space-y-6"
           >
             <h2 className="text-xl font-bold text-gray-900">Product Images</h2>
+            
+            {/* Multiple Images Upload */}
             <div>
               <label className="block font-medium text-gray-700 mb-2">
                 Upload Images <span className="text-red-500">*</span>
@@ -237,10 +239,11 @@ export function AdminAddProductPage() {
                 multiple
                 onChange={handleImageChange}
                 className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                disabled={formData.imageUrls.length >= 5}
+                disabled={imageFiles.length >= 5}
               />
             </div>
 
+            {/* Image Previews */}
             {imagePreviews.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                 {imagePreviews.map((preview, index) => (
@@ -248,12 +251,12 @@ export function AdminAddProductPage() {
                     <img
                       src={preview}
                       alt={`Product Preview ${index + 1}`}
-                      className="w-full h-full rounded-lg object-cover"
+                      className="w-full h-full rounded-lg object-cover border"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-700"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -261,6 +264,20 @@ export function AdminAddProductPage() {
                 ))}
               </div>
             )}
+
+            {/* Product Name */}
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">
+                Product Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                placeholder="e.g., Premium Cotton T-Shirt"
+              />
+            </div>
 
             <div>
               <label className="block font-medium text-gray-700 mb-2">
@@ -275,31 +292,7 @@ export function AdminAddProductPage() {
               />
             </div>
 
-            <div>
-              <label className="block font-medium text-gray-700 mb-2">
-                Product Image <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="file"
-                accept="image/png, image/jpeg, image/gif"
-                onChange={handleImageChange}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Note: After adding the product, you must manually move the image file to the{' '}
-                <code className="text-xs bg-gray-100 p-1 rounded">public/images</code> folder.
-              </p>
-              {imagePreviews.length > 0 && (
-                <div className="mt-4">
-                  <img
-                    src={imagePreviews[0]}
-                    alt="Image Preview"
-                    className="w-32 h-32 object-cover rounded-lg border"
-                  />
-                </div>
-              )}
-            </div>
-
+            {/* Description */}
             <div>
               <label className="block font-medium text-gray-700 mb-2">
                 Description <span className="text-red-500">*</span>
@@ -328,19 +321,19 @@ export function AdminAddProductPage() {
               />
             </div>
 
-            {/* Thumbnail Image - Separate from gallery */}
+            {/* Thumbnail Image */}
             <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">صورة المصغرة (لصفحة المنتجات)</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Thumbnail Image (for product listings)</h3>
               <p className="text-sm text-gray-500 mb-4">
-                هذه الصورة تظهر في الصفحة الرئيسية وقوائم المنتجات
+                This image appears on the homepage and product listings
               </p>
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  صورة مصغرة
+                  Thumbnail Image
                 </label>
                 <Input
                   type="file"
-                  accept="image/png, image/jpeg, image/gif"
+                  accept="image/*"
                   onChange={handleThumbnailChange}
                   className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                 />
@@ -354,9 +347,9 @@ export function AdminAddProductPage() {
                     <button
                       type="button"
                       onClick={handleRemoveThumbnail}
-                      className="text-red-600 hover:text-red-700 text-sm"
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
                     >
-                      إزالة الصورة
+                      Remove Image
                     </button>
                   </div>
                 )}
@@ -380,6 +373,8 @@ export function AdminAddProductPage() {
                 </label>
                 <Input
                   type="number"
+                  min="0"
+                  step="0.01"
                   value={formData.price}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, price: e.target.value }))
@@ -394,6 +389,8 @@ export function AdminAddProductPage() {
                 </label>
                 <Input
                   type="number"
+                  min="0"
+                  step="0.01"
                   value={formData.originalPrice}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, originalPrice: e.target.value }))
@@ -409,6 +406,7 @@ export function AdminAddProductPage() {
               </label>
               <Input
                 type="number"
+                min="0"
                 value={formData.stockQuantity}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, stockQuantity: e.target.value }))
@@ -426,7 +424,7 @@ export function AdminAddProductPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, category: e.target.value }))
                 }
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -447,6 +445,9 @@ export function AdminAddProductPage() {
                 }
                 placeholder="cotton, basic, white"
               />
+              <p className="text-sm text-gray-500 mt-1">
+                Example: cotton, summer, casual
+              </p>
             </div>
           </motion.div>
         </div>
@@ -470,13 +471,18 @@ export function AdminAddProductPage() {
                 className={`w-14 h-14 rounded-lg font-medium transition-all ${
                   formData.sizes.includes(size)
                     ? 'bg-primary text-white ring-2 ring-primary ring-offset-2'
-                    : 'bg-gray-100 hover:bg-gray-200'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                 }`}
               >
                 {size}
               </button>
             ))}
           </div>
+          {formData.sizes.length > 0 && (
+            <p className="text-sm text-gray-600 mt-3">
+              Selected sizes: {formData.sizes.join(', ')}
+            </p>
+          )}
         </motion.div>
 
         {/* Colors */}
@@ -486,7 +492,9 @@ export function AdminAddProductPage() {
           transition={{ delay: 0.3 }}
           className="bg-white rounded-xl p-6 shadow-card"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Available Colors</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Available Colors <span className="text-red-500">*</span>
+          </h2>
           <div className="flex flex-wrap gap-4">
             {availableColors.map((color) => (
               <button
@@ -500,13 +508,18 @@ export function AdminAddProductPage() {
                 }`}
               >
                 <div
-                  className="w-6 h-6 rounded-full border"
+                  className="w-6 h-6 rounded-full border border-gray-200"
                   style={{ backgroundColor: color.hex }}
                 />
-                <span>{color.nameAr}</span>
+                <span>{color.name}</span>
               </button>
             ))}
           </div>
+          {formData.colors.length > 0 && (
+            <p className="text-sm text-gray-600 mt-3">
+              Selected colors: {formData.colors.join(', ')}
+            </p>
+          )}
         </motion.div>
 
         {/* Product Flags */}
@@ -525,7 +538,7 @@ export function AdminAddProductPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, isNew: e.target.checked }))
                 }
-                className="w-5 h-5 text-primary rounded"
+                className="w-5 h-5 text-primary rounded focus:ring-primary"
               />
               <span className="font-medium">New Product</span>
             </label>
@@ -537,7 +550,7 @@ export function AdminAddProductPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, isBestseller: e.target.checked }))
                 }
-                className="w-5 h-5 text-primary rounded"
+                className="w-5 h-5 text-primary rounded focus:ring-primary"
               />
               <span className="font-medium">Bestseller</span>
             </label>
@@ -549,7 +562,7 @@ export function AdminAddProductPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, isOnSale: e.target.checked }))
                 }
-                className="w-5 h-5 text-primary rounded"
+                className="w-5 h-5 text-primary rounded focus:ring-primary"
               />
               <span className="font-medium">On Sale</span>
             </label>
@@ -563,7 +576,7 @@ export function AdminAddProductPage() {
             disabled={isSubmitting}
             className="flex-1 bg-primary hover:bg-primary-dark text-white py-6 text-lg"
           >
-            {isSubmitting ? 'Adding...' : 'Add Product'}
+            {isSubmitting ? 'Adding Product...' : 'Add Product'}
           </Button>
           <Button
             type="button"

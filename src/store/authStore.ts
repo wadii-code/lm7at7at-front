@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { User } from '@/types';
+import type { TSet, TGet } from './store.types';
 
 interface AuthState {
   user: User | null;
@@ -16,14 +16,13 @@ interface AuthState {
 const ADMIN_EMAIL = 'admin@teestore.com';
 const ADMIN_PASSWORD = 'admin123';
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+export const useAuthStore = create<AuthState>((set: TSet<AuthState>, get: TGet<AuthState>) => ({
       user: null,
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
-        // Simple authentication - in production, this would be an API call
+        // TODO: Replace with API call
+        console.log(`Logging in with ${email} (API call needed)`);
         if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
           const adminUser: User = {
             id: 'admin-1',
@@ -40,15 +39,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // TODO: Add API call for logout if needed
         set({ user: null, isAuthenticated: false });
       },
 
       isAdmin: () => {
         return get().user?.isAdmin ?? false;
       },
-    }),
-    {
-      name: 'auth-store',
-    }
-  )
-);
+    }));

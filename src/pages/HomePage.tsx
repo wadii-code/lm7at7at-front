@@ -47,8 +47,6 @@ export function HomePage() {
         />
       )}
 
-      <CollectionsSection />
-
       <CustomerReviews />
 
     </div>

@@ -1,3 +1,41 @@
+# E-commerce Store - LM7AT7AT
+
+## Database Integration - Supabase
+
+This project uses Supabase for persistent data storage. Products, collections, and orders are stored in the database.
+
+### Setup Instructions
+
+1. **Create a Supabase Project**
+   - Go to https://supabase.com and create a new project
+   - Get your project URL and anon key from Settings → API
+
+2. **Configure Environment Variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and add your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+3. **Create Database Tables**
+   Run the SQL from `supabase-schema.sql` in your Supabase SQL Editor to create the necessary tables.
+
+### Features
+- Products persist across page refreshes
+- Full CRUD operations (Create, Read, Update, Delete)
+- Collections management
+- Orders tracking
+
+### Fallback
+If Supabase is not configured, the app will use local state (data will not persist).
+
+---
+
+## Original Setup Info
+
 Using Node.js 20, Tailwind CSS v3.4.19, and Vite v7.2.4
 
 Tailwind CSS has been set up with the shadcn theme
@@ -28,4 +66,4 @@ Structure:
   index.html           Entry point for the Webapp
   tailwind.config.js   Configures Tailwind's theme, plugins, etc.
   vite.config.ts       Main build and dev server settings for Vite
-  postcss.config.js    Config file for CSS post-processing tools
+  postcss.config.js   Config file for CSS post-processing tools

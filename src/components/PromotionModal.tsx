@@ -113,7 +113,7 @@ export function PromotionModal() {
 
           <div className="relative z-10 flex flex-col items-start justify-end h-full p-8 md:p-12 text-white">
             <motion.div
-              key={index} // Re-trigger animation on slide change
+              key={index} 
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.3 }}
