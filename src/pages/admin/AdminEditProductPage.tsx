@@ -145,7 +145,7 @@ export function AdminEditProductPage() {
         isOnSale: formData.isOnSale,
       };
 
-      const success = await updateProduct(id!, updates);
+      const success = await updateProduct(id!, updates as any);
       
       if (success) {
         toast.success('تم تحديث المنتج بنجاح!');

@@ -1,26 +1,26 @@
 export interface Product {
-  id: string;
+  id?: string;
   name: string;
-  name_ar: string;
-  description_ar: string;
+  nameAr: string;
+  description: string;
   descriptionAr: string;
   price: number;
-  original_price?: number;
+  originalPrice?: number;
   images: string[];
   thumbnail?: string; // Separate image for main page display
   category: string;
   subcategory?: string;
   sizes: string[];
-  colors: { name: string; name_ar: string; hex: string }[];
-  in_stock: boolean;
-  stock_quantity: number;
+  colors: { name: string; nameAr: string; hex: string }[];
+  inStock: boolean;
+  stockQuantity: number;
   rating: number;
-  review_count: number;
+  reviewCount: number;
   tags: string[];
-  is_new?: boolean;
-  is_bestseller?: boolean;
-  is_on_sale?: boolean;
-  created_at: string;
+  isNew?: boolean;
+  isBestseller?: boolean;
+  isOnSale?: boolean;
+  createdAt?: string;
 }
 
 export interface CartItem extends Product {

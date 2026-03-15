@@ -43,7 +43,34 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const response = await fetch(`${API_URL}/products`);
       if (!response.ok) throw new Error('Failed to fetch products');
-      const products: Product[] = await response.json();
+      const snakeCaseProducts = await response.json();
+      
+      // Transform snake_case to camelCase
+      const products: Product[] = snakeCaseProducts.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        nameAr: product.name_ar,
+        description: product.description,
+        descriptionAr: product.description_ar,
+        price: product.price,
+        originalPrice: product.original_price,
+        images: product.images,
+        thumbnail: product.thumbnail,
+        category: product.category,
+        subcategory: product.subcategory,
+        sizes: product.sizes,
+        colors: product.colors,
+        inStock: product.in_stock,
+        stockQuantity: product.stock_quantity,
+        rating: product.rating,
+        reviewCount: product.review_count,
+        tags: product.tags,
+        isNew: product.is_new,
+        isBestseller: product.is_bestseller,
+        isOnSale: product.is_on_sale,
+        createdAt: product.created_at,
+      }));
+      
       set({ products, isLoading: false });
     } catch (error: any) {
       console.error('Error fetching products:', error);
@@ -54,7 +81,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
   addProduct: async (product) => {
     set({ isLoading: true, error: null });
     try {
-      console.log(product);
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,23 +131,39 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   uploadImage: async (file: File): Promise<string> => {
-    // This function assumes 'isSupabaseConfigured' and 'supabase' are defined and available in this scope.
     if (!isSupabaseConfigured() || !supabase) {
       throw new Error('Supabase not configured');
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
 
-    const { error } = await supabase.storage.from('product-images').upload(filePath, file);
+      console.log('Uploading to path:', filePath);
 
-    if (error) {
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+      
+      console.log('Public URL:', data.publicUrl);
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Full upload error:', error);
       throw error;
     }
-
-    const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
-    return data.publicUrl;
   },
 
   getProductById: (id) => {
@@ -141,8 +183,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          (p.name_ar && p.name_ar.toLowerCase().includes(query)) ||
-          p.description_ar.toLowerCase().includes(query) ||
+          (p.nameAr && p.nameAr.toLowerCase().includes(query)) ||
+          p.descriptionAr.toLowerCase().includes(query) ||
           p.tags.some((tag: string) => tag.toLowerCase().includes(query))
       );
     }
@@ -181,13 +223,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         case 'newest':
           result.sort(
             (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at
-              ).getTime()
+              new Date(b.createdAt!).getTime() -
+              new Date(a.createdAt!).getTime()
           );
           break;
         case 'bestseller':
-          result.sort((a, b) => b.review_count - a.review_count);
+          result.sort((a, b) => b.reviewCount - a.reviewCount);
           break;
         case 'rating':
           result.sort((a, b) => b.rating - a.rating);

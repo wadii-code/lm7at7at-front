@@ -162,24 +162,24 @@ export function AdminAddProductPage() {
       // 3. Construct the product object
       const new_product = {
         name: formData.name || formData.nameAr,
-        name_ar: formData.nameAr,
+        nameAr: formData.nameAr,
         description: formData.description || formData.descriptionAr,
-        description_ar: formData.descriptionAr,
+        descriptionAr: formData.descriptionAr,
         price: parseFloat(formData.price),
-        original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
         images: uploadedImageUrls,
         thumbnail: uploadedThumbnailUrl,
         category: formData.category,
         sizes: formData.sizes,
         colors: selectedColors,
-        in_stock: parseInt(formData.stockQuantity) > 0,
-        stock_quantity: parseInt(formData.stockQuantity) || 0,
+        inStock: parseInt(formData.stockQuantity) > 0,
+        stockQuantity: parseInt(formData.stockQuantity) || 0,
         rating: 0,
-        review_count: 0,
+        reviewCount: 0,
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        is_new: formData.isNew,
-        is_bestseller: formData.isBestseller,
-        is_on_sale: formData.isOnSale,
+        isNew: formData.isNew,
+        isBestseller: formData.isBestseller,
+        isOnSale: formData.isOnSale,
       };
       // 4. Call addProduct
       const success = await addProduct(new_product);

@@ -21,7 +21,7 @@ export function AdminProductsPage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
-      product.name_ar?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      product.nameAr?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       product.name?.toLowerCase().includes(searchQuery?.toLowerCase());
     const matchesCategory =
       filterCategory === 'all' || product.category === filterCategory;
@@ -133,12 +133,12 @@ export function AdminProductsPage() {
                     <div className="flex items-center gap-3">
                       <img
                         src={product.thumbnail || product.images[0]}
-                        alt={product.name_ar}
+                        alt={product.nameAr}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
                       <div>
                         <p className="font-medium text-gray-900">
-                          {product.name_ar}
+                          {product.nameAr}
                         </p>
                         <p className="text-sm text-gray-500">{product.name}</p>
                       </div>
@@ -152,9 +152,9 @@ export function AdminProductsPage() {
                   <td className="py-4 px-4">
                     <div>
                       <span className="font-medium">{product.price} درهم</span>
-                      {product.original_price && (
+                      {product.originalPrice && (
                         <span className="text-sm text-gray-400 line-through mr-2">
-                          {product.original_price} درهم
+                          {product.originalPrice} درهم
                         </span>
                       )}
                     </div>
@@ -162,12 +162,12 @@ export function AdminProductsPage() {
                   <td className="py-4 px-4">
                     <span
                       className={`font-medium ${
-                        product.stock_quantity < 10
+                        product.stockQuantity < 10
                           ? 'text-orange-600'
                           : 'text-green-600'
                       }`}
                     >
-                      {product.stock_quantity}
+                      {product.stockQuantity}
                     </span>
                   </td>
                   <td className="py-4 px-4">
@@ -175,19 +175,19 @@ export function AdminProductsPage() {
                       <span>⭐</span>
                       <span className="font-medium">{product.rating}</span>
                       <span className="text-sm text-gray-500">
-                        ({product.review_count})
+                        ({product.reviewCount})
                       </span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        product.in_stock
+                        product.inStock
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {product.in_stock ? 'متوفر' : 'غير متوفر'}
+                      {product.inStock ? 'متوفر' : 'غير متوفر'}
                     </span>
                   </td>
                   <td className="py-4 px-4">
@@ -207,7 +207,7 @@ export function AdminProductsPage() {
                         <Edit2 className="w-4 h-4 text-blue-600" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(product.id, product.name_ar)}
+                        onClick={() => handleDelete(product.id!, product.nameAr)}
                         className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                         title="حذف"
                       >

@@ -81,7 +81,7 @@ export function ProductDetailPage() {
     try {
       await navigator.share({
         title: product.name,
-        text: product.description,
+        text: product.descriptionAr,
         url: window.location.href,
       });
     } catch {
