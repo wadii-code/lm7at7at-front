@@ -16,10 +16,10 @@ export function AdminDashboardPage() {
 
   // Calculate stats
   const totalProducts = products.length;
-  const totalStock = products.reduce((sum, p) => sum + p.stockQuantity, 0);
-  const lowStockProducts = products.filter((p) => p.stockQuantity < 10).length;
+  const totalStock = products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0);
+  const lowStockProducts = products.filter((p) => (p.stockQuantity || 0) < 10).length;
   
-  const averageRating = products.reduce((sum, p) => sum + p.rating, 0) / products.length;
+  const averageRating = products.length > 0 ? products.reduce((sum, p) => sum + p.rating, 0) / products.length : 0;
 
   const stats = [
     {
@@ -57,7 +57,10 @@ export function AdminDashboardPage() {
   ];
 
   const recentProducts = [...products]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
+    )
     .slice(0, 5);
 
   return (
@@ -236,12 +239,12 @@ export function AdminDashboardPage() {
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
-                        product.inStock
+                        product.stockQuantity > 0
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {product.inStock ? 'In Stock' : 'Out of Stock'}
+                      {product.stockQuantity > 0 ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
                 </tr>

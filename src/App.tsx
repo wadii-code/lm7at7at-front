@@ -10,8 +10,10 @@ import { ProductDetailPage } from '@/pages/ProductDetailPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { CartPage } from '@/pages/CartPage';
 import { WishlistPage } from '@/pages/WishlistPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { SignupPage } from '@/pages/SignupPage';
+import { ProfilePage } from '@/pages/ProfilePage'; // Add this import
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { AdminLoginPage } from '@/pages/admin/AdminLoginPage';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
 import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
 import { AdminAddProductPage } from '@/pages/admin/AdminAddProductPage';
@@ -27,7 +29,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuthStore();
   
   if (!isAuthenticated || !isAdmin()) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   return <>{children}</>;
@@ -54,84 +56,30 @@ function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
+          <Route path="profile" element={<ProfilePage />} /> {/* Add this route */}
         </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="login" element={<AdminLoginPage />} />
-          <Route 
-            path="dashboard" 
-            element={
-              <ProtectedRoute>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="products" 
-            element={
-              <ProtectedRoute>
-                <AdminProductsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="products/add" 
-            element={
-              <ProtectedRoute>
-                <AdminAddProductPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="products/edit/:id" 
-            element={
-              <ProtectedRoute>
-                <AdminEditProductPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="orders" 
-            element={
-              <ProtectedRoute>
-                <AdminOrdersPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="orders/delivered" 
-            element={
-              <ProtectedRoute>
-                <AdminDeliveredOrdersPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="collections" 
-            element={
-              <ProtectedRoute>
-                <AdminCollectionsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="collections/add" 
-            element={
-              <ProtectedRoute>
-                <AdminAddCollectionPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="collections/edit/:id" 
-            element={
-              <ProtectedRoute>
-                <AdminAddCollectionPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route index element={<Navigate to="/admin/login" replace />} />
+        {/* Admin Routes - Protected */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="products" element={<AdminProductsPage />} />
+          <Route path="products/add" element={<AdminAddProductPage />} />
+          <Route path="products/edit/:id" element={<AdminEditProductPage />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/delivered" element={<AdminDeliveredOrdersPage />} />
+          <Route path="collections" element={<AdminCollectionsPage />} />
+          <Route path="collections/add" element={<AdminAddCollectionPage />} />
+          <Route path="collections/edit/:id" element={<AdminAddCollectionPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

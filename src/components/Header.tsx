@@ -2,10 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, User, ShoppingBag, Menu, Heart } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 export function Header() {
   const navigate = useNavigate();
@@ -13,6 +23,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const { getTotalItems, setCartOpen } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
+  const { isAuthenticated, logout } = useAuthStore();
 
   const totalItems = getTotalItems();
   const wishlistCount = wishlistItems.length;
@@ -98,7 +109,7 @@ export function Header() {
                         Cart ({totalItems})
                       </Link>
                       <Link
-                        to="/admin/login"
+                        to="/login"
                         className="text-lg font-medium text-gray-700 hover:text-primary transition-colors"
                       >
                         Login
@@ -152,12 +163,32 @@ export function Header() {
               </Link>
 
               {/* Account */}
-              <Link
-                to="/admin/login"
-                className="hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <User className="w-5 h-5 text-gray-700" />
-              </Link>
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                      <User className="w-5 h-5 text-gray-700" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => logout()}>
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link
+                  to="/login"
+                  className="hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <User className="w-5 h-5 text-gray-700" />
+                </Link>
+              )}
 
               {/* Cart */}
               <button

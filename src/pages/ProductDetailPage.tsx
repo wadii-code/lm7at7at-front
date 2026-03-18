@@ -6,18 +6,20 @@ import {
   Share2, 
   Truck, 
   Shield, 
-  RotateCcw, 
-  Star,
+  RotateCcw,
   ChevronRight,
   Minus,
   Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProductStore } from '@/store/productStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { useReviewStore } from '@/store/reviewStore';
 import { ProductCard } from '@/components/ProductCard';
+import { ReviewList } from '@/components/ReviewList';
+import { ReviewForm } from '@/components/ReviewForm';
+import { StarRating } from '@/components/starRating';
 import { toast } from 'sonner';
 
 export function ProductDetailPage() {
@@ -25,8 +27,12 @@ export function ProductDetailPage() {
   const { getProductById, products } = useProductStore();
   const { addItem } = useCartStore();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const { reviews, fetchReviews } = useReviewStore();
   
   const product = getProductById(id || '');
+  const relatedProducts = products
+    .filter((p) => p.category === product?.category && p.id !== product?.id)
+    .slice(0, 4);
   
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
@@ -37,7 +43,10 @@ export function ProductDetailPage() {
     if (product && product.images.length > 0) {
       setActiveImage(0);
     }
-  }, [product]);
+    if (id) {
+      fetchReviews(id);
+    }
+  }, [product, id, fetchReviews]);
 
   if (!product) {
     return (
@@ -54,9 +63,11 @@ export function ProductDetailPage() {
     );
   }
 
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 8);
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
+    : product.rating;
+
+  const reviewCount = reviews.length > 0 ? reviews.length : product.reviewCount;
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -156,12 +167,12 @@ export function ProductDetailPage() {
                 {product.name}
               </h1>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-bold">{product.rating}</span>
-                  <span className="text-gray-500">
-                    ({product.reviewCount} reviews)
-                  </span>
+                <div className="flex items-center gap-2">
+                  <StarRating rating={averageRating} />
+                  <span className="font-bold">{averageRating.toFixed(1)}</span>
+                  <a href="#reviews" className="text-gray-500 hover:underline">
+                    ({reviewCount} reviews)
+                  </a>
                 </div>
                 {product.isNew && (
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -270,11 +281,11 @@ export function ProductDetailPage() {
             <div className="flex items-center gap-4">
               <Button 
                 variant="outline"
-                onClick={() => toggleWishlist(product.id)}
+                onClick={() => toggleWishlist(product.id!)}
                 className="flex-1"
               >
-                <Heart className={`w-5 h-5 mr-2 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                {isInWishlist(product.id) ? 'In Wishlist' : 'Add to Wishlist'}
+                <Heart className={`w-5 h-5 mr-2 ${isInWishlist(product.id || '') ? 'fill-red-500 text-red-500' : ''}`} />
+                {isInWishlist(product.id || '') ? 'In Wishlist' : 'Add to Wishlist'}
               </Button>
               <Button variant="outline" onClick={handleShare} className="flex-1">
                 <Share2 className="w-5 h-5 mr-2" />
@@ -300,25 +311,17 @@ export function ProductDetailPage() {
           </motion.div>
         </div>
 
-        {/* Tabs for Details & Reviews */}
-        <div className="mt-16">
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Product Details</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            </TabsList>
-            <TabsContent value="details" className="py-6 px-4">
-              <p className="text-gray-600 leading-relaxed">
-                {product.description}
-              </p>
-              {/* Add more details here if needed */}
-            </TabsContent>
-            <TabsContent value="reviews" className="py-6 px-4">
-              <h3 className="text-xl font-bold mb-4">Customer Reviews</h3>
-              {/* Reviews would be mapped here */}
-              <p className="text-gray-500">No reviews yet.</p>
-            </TabsContent>
-          </Tabs>
+        {/* Customer Reviews */}
+        <div id="reviews" className="mt-16">
+          <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <ReviewList reviews={reviews} />
+            </div>
+            <div className="md:col-span-1">
+              <ReviewForm productId={id!} />
+            </div>
+          </div>
         </div>
 
         {/* Related Products */}

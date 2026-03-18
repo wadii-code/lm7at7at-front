@@ -22,7 +22,7 @@ export function CollectionsSection() {
         </motion.div>
 
         {/* Collections Grid - Show all collections */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.map((collection, index) => {
             // Get real product count for this collection
             const category = collection.href.replace('/products/', '');

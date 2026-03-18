@@ -39,6 +39,8 @@ export interface Collection {
 }
 
 export interface Review {
+  user: any;
+  created_at(created_at: any): import("react").ReactNode;
   id: string;
   productId: string;
   userName: string;

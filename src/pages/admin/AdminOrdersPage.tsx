@@ -1,11 +1,26 @@
 import { useMemo, useState } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { Trash2 } from 'lucide-react';
 import { useOrderStore } from '@/store/orderStore';
 import type { Order } from '@/types';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function AdminOrdersPage() {
-  const { orders, updateOrderStatus } = useOrderStore();
+  const { orders, updateOrderStatus, removeOrder } = useOrderStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Order['status'] | 'all'>('all');
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -23,6 +38,20 @@ export function AdminOrdersPage() {
 
   const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
     updateOrderStatus(orderId, newStatus);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!deleteOrderId) return;
+
+    try {
+      await axios.delete(`/api/orders/${deleteOrderId}`);
+      removeOrder(deleteOrderId);
+      toast.success('Order deleted successfully');
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('Failed to delete order');
+    }
+    setDeleteOrderId(null);
   };
 
   return (
@@ -65,6 +94,7 @@ export function AdminOrdersPage() {
                 <th className="p-3 text-left text-sm font-semibold text-gray-600">Total Price</th>
                 <th className="p-3 text-left text-sm font-semibold text-gray-600">Date</th>
                 <th className="p-3 text-left text-sm font-semibold text-gray-600">Status</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -96,12 +126,35 @@ export function AdminOrdersPage() {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
+                  <td className="p-3 text-sm">
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteOrderId(order.id)} className="text-red-500 hover:text-red-700">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      <AlertDialog open={deleteOrderId !== null} onOpenChange={() => setDeleteOrderId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the order
+              and all its associated data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

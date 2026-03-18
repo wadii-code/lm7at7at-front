@@ -3,7 +3,6 @@ import type { Review, FilterOptions } from '@/types';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { Product } from '@/types';
 
-
 interface ProductState {
   products: Product[];
   reviews: Review[];
@@ -13,7 +12,7 @@ interface ProductState {
   error: string | null;
   
   fetchProducts: () => Promise<void>;
-  addProduct: (product: Product) => Promise<boolean>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'rating' | 'reviewCount'>) => Promise<boolean>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
   getProductById: (id: string) => Product | undefined;
@@ -22,13 +21,64 @@ interface ProductState {
   setSearchQuery: (query: string) => void;
   setFilters: (filters: FilterOptions) => void;
   clearFilters: () => void;
-  addReview: (review: Omit<Review, 'id' | 'date'>) => Promise<boolean>;
+  addReview: (review: Omit<Review, 'id' | 'createdAt'>) => Promise<boolean>;
   getProductReviews: (productId: string) => Review[];
   fetchReviews: (productId: string) => Promise<void>;
   uploadImage: (file: File) => Promise<string>;
 }
 
-const API_URL = 'http://localhost:3001/api';
+// Helper function to transform database snake_case to camelCase
+const transformProductFromDB = (dbProduct: any): Product => ({
+  id: dbProduct.id,
+  name: dbProduct.name,
+  nameAr: dbProduct.name_ar,
+  description: dbProduct.description,
+  descriptionAr: dbProduct.description_ar,
+  price: dbProduct.price,
+  originalPrice: dbProduct.original_price,
+  images: dbProduct.images || [],
+  thumbnail: dbProduct.thumbnail,
+  category: dbProduct.category,
+  subcategory: dbProduct.subcategory,
+  sizes: dbProduct.sizes || [],
+  colors: dbProduct.colors || [], // This might need transformation if colors are stored in a separate table
+  inStock: dbProduct.in_stock,
+  stockQuantity: dbProduct.stock_quantity,
+  rating: dbProduct.rating,
+  reviewCount: dbProduct.review_count,
+  tags: dbProduct.tags || [],
+  isNew: dbProduct.is_new,
+  isBestseller: dbProduct.is_bestseller,
+  isOnSale: dbProduct.is_on_sale,
+  createdAt: dbProduct.created_at,
+});
+
+// Helper function to transform camelCase to snake_case for database
+const transformProductForDB = (product: Partial<Product>) => {
+  const dbProduct: any = {};
+  
+  if (product.name !== undefined) dbProduct.name = product.name;
+  if (product.nameAr !== undefined) dbProduct.name_ar = product.nameAr;
+  if (product.description !== undefined) dbProduct.description = product.description;
+  if (product.descriptionAr !== undefined) dbProduct.description_ar = product.descriptionAr;
+  if (product.price !== undefined) dbProduct.price = product.price;
+  if (product.originalPrice !== undefined) dbProduct.original_price = product.originalPrice;
+  if (product.images !== undefined) dbProduct.images = product.images;
+  if (product.thumbnail !== undefined) dbProduct.thumbnail = product.thumbnail;
+  if (product.category !== undefined) dbProduct.category = product.category;
+  if (product.subcategory !== undefined) dbProduct.subcategory = product.subcategory;
+  if (product.sizes !== undefined) dbProduct.sizes = product.sizes;
+  if (product.inStock !== undefined) dbProduct.in_stock = product.inStock;
+  if (product.stockQuantity !== undefined) dbProduct.stock_quantity = product.stockQuantity;
+  if (product.rating !== undefined) dbProduct.rating = product.rating;
+  if (product.reviewCount !== undefined) dbProduct.review_count = product.reviewCount;
+  if (product.tags !== undefined) dbProduct.tags = product.tags;
+  if (product.isNew !== undefined) dbProduct.is_new = product.isNew;
+  if (product.isBestseller !== undefined) dbProduct.is_bestseller = product.isBestseller;
+  if (product.isOnSale !== undefined) dbProduct.is_on_sale = product.isOnSale;
+  
+  return dbProduct;
+};
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
@@ -41,35 +91,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProducts: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/products`);
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const snakeCaseProducts = await response.json();
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
       
       // Transform snake_case to camelCase
-      const products: Product[] = snakeCaseProducts.map((product: any) => ({
-        id: product.id,
-        name: product.name,
-        nameAr: product.name_ar,
-        description: product.description,
-        descriptionAr: product.description_ar,
-        price: product.price,
-        originalPrice: product.original_price,
-        images: product.images,
-        thumbnail: product.thumbnail,
-        category: product.category,
-        subcategory: product.subcategory,
-        sizes: product.sizes,
-        colors: product.colors,
-        inStock: product.in_stock,
-        stockQuantity: product.stock_quantity,
-        rating: product.rating,
-        reviewCount: product.review_count,
-        tags: product.tags,
-        isNew: product.is_new,
-        isBestseller: product.is_bestseller,
-        isOnSale: product.is_on_sale,
-        createdAt: product.created_at,
-      }));
+      const products: Product[] = data.map(transformProductFromDB);
       
       set({ products, isLoading: false });
     } catch (error: any) {
@@ -81,12 +111,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
   addProduct: async (product) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product),
-      });
-      if (!response.ok) throw new Error('Failed to add product');
+      // Transform to snake_case for database
+      const productData = transformProductForDB(product);
+      
+      // Add default values
+      productData.created_at = new Date().toISOString();
+      productData.rating = 0;
+      productData.review_count = 0;
+      
+      const { error } = await supabase
+        .from('products')
+        .insert([productData]);
+
+      if (error) throw error;
+      
       await get().fetchProducts();
       return true;
     } catch (error: any) {
@@ -99,12 +137,16 @@ export const useProductStore = create<ProductState>((set, get) => ({
   updateProduct: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/products/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error('Failed to update product');
+      // Transform camelCase to snake_case
+      const dbUpdates = transformProductForDB(updates);
+
+      const { error } = await supabase
+        .from('products')
+        .update(dbUpdates)
+        .eq('id', id);
+
+      if (error) throw error;
+      
       await get().fetchProducts();
       return true;
     } catch (error: any) {
@@ -117,10 +159,43 @@ export const useProductStore = create<ProductState>((set, get) => ({
   deleteProduct: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/products/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete product');
+      // First, get the product to delete its images
+      const { data: product, error: fetchError } = await supabase
+        .from('products')
+        .select('images, thumbnail')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete images from storage
+      if (product?.images && product.images.length > 0) {
+        const imagePaths = product.images.map((url: string) => {
+          const path = url.split('/').pop();
+          return `products/${path}`;
+        });
+        
+        await supabase.storage
+          .from('product-images')
+          .remove(imagePaths);
+      }
+
+      // Delete thumbnail if it exists and is different from images
+      if (product?.thumbnail && !product.images.includes(product.thumbnail)) {
+        const thumbnailPath = `products/${product.thumbnail.split('/').pop()}`;
+        await supabase.storage
+          .from('product-images')
+          .remove([thumbnailPath]);
+      }
+
+      // Delete the product from database (this will cascade to related tables)
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
       await get().fetchProducts();
       return true;
     } catch (error: any) {
@@ -137,7 +212,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
       console.log('Uploading to path:', filePath);
@@ -184,8 +259,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         (p) =>
           p.name.toLowerCase().includes(query) ||
           (p.nameAr && p.nameAr.toLowerCase().includes(query)) ||
+          p.description.toLowerCase().includes(query) ||
           p.descriptionAr.toLowerCase().includes(query) ||
-          p.tags.some((tag: string) => tag.toLowerCase().includes(query))
+          (p.tags && p.tags.some((tag: string) => tag.toLowerCase().includes(query)))
       );
     }
 
@@ -202,13 +278,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
     if (filters.sizes && filters.sizes.length > 0) {
       result = result.filter((p) =>
-        p.sizes.some((size: string) => filters.sizes!.includes(size))
+        p.sizes && p.sizes.some((size: string) => filters.sizes!.includes(size))
       );
     }
 
     if (filters.colors && filters.colors.length > 0) {
       result = result.filter((p) =>
-        p.colors.some((color: { name: string }) => filters.colors!.includes(color.name))
+        p.colors && p.colors.some((color: any) => 
+          typeof color === 'string' 
+            ? filters.colors!.includes(color)
+            : filters.colors!.includes(color.name)
+        )
       );
     }
 
@@ -248,13 +328,42 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   addReview: async (review) => {
     try {
-      const response = await fetch(`${API_URL}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(review),
-      });
+      // Transform to snake_case for database
+      const reviewData = {
+        product_id: review.productId,
+        user_name: review.userName,
+        rating: review.rating,
+        comment: review.comment,
+        comment_ar: review.commentAr,
+        images: review.images || [],
+        verified: review.verified || false,
+        created_at: new Date().toISOString()
+      };
 
-      if (!response.ok) throw new Error('Failed to add review');
+      const { error } = await supabase
+        .from('reviews')
+        .insert([reviewData]);
+
+      if (error) throw error;
+
+      // Update product rating and review count
+      const { data: reviews, error: fetchError } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('product_id', review.productId);
+
+      if (!fetchError && reviews) {
+        const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+        const averageRating = totalRating / reviews.length;
+        
+        await supabase
+          .from('products')
+          .update({ 
+            rating: averageRating,
+            review_count: reviews.length 
+          })
+          .eq('id', review.productId);
+      }
       
       await get().fetchReviews(review.productId);
       await get().fetchProducts(); // Refetch products to update review counts/ratings
@@ -273,10 +382,28 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchReviews: async (productId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/products/${productId}/reviews`);
-      if (!response.ok) throw new Error('Failed to fetch reviews');
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false });
 
-      const reviews: Review[] = await response.json();
+      if (error) throw error;
+
+      // Transform snake_case to camelCase
+      const reviews: Review[] = data.map(item => ({
+        id: item.id,
+        productId: item.product_id,
+        userName: item.user_name,
+        rating: item.rating,
+        comment: item.comment,
+        commentAr: item.comment_ar,
+        images: item.images || [],
+        verified: item.verified,
+        createdAt: item.created_at,
+        date: "",
+      }));
+
       set({ reviews, isLoading: false });
     } catch (error: any) {
       console.error('Error fetching reviews:', error);
