@@ -10,6 +10,7 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { useProductStore } from '@/store/productStore';
+import { StarRating } from '@/components/StarRating';
 
 export function AdminDashboardPage() {
   const { products } = useProductStore();
@@ -232,8 +233,9 @@ export function AdminDashboardPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-1">
-                      <span>⭐</span>
-                      <span>{product.rating}</span>
+                      <StarRating rating={product.rating} />
+                      <span className="font-bold">{product.rating.toFixed(1)}</span>
+                      <span className="text-gray-500">({product.reviewCount})</span>
                     </div>
                   </td>
                   <td className="py-3 px-4">

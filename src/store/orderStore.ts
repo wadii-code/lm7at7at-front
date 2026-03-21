@@ -106,9 +106,16 @@ export const useOrderStore = create<OrderState>()(
         try {
           const token = useAuthStore.getState().token;
 
+          const orderData = {
+            customer: order.customer,
+            items: order.items,
+            total: order.total,
+            status: order.status,
+          };
+
           const response = await axios.post(
             'http://localhost:3001/api/orders',
-            order,
+            orderData,
             { headers: { Authorization: `Bearer ${token}` } }
           );
 

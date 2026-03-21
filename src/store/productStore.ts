@@ -41,7 +41,7 @@ const transformProductFromDB = (dbProduct: any): Product => ({
   category: dbProduct.category,
   subcategory: dbProduct.subcategory,
   sizes: dbProduct.sizes || [],
-  colors: dbProduct.colors || [], // This might need transformation if colors are stored in a separate table
+  colors: dbProduct.product_colors || [],
   inStock: dbProduct.in_stock,
   stockQuantity: dbProduct.stock_quantity,
   rating: dbProduct.rating,
@@ -93,7 +93,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_colors (*)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -394,6 +397,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const reviews: Review[] = data.map(item => ({
         id: item.id,
         productId: item.product_id,
+        user: item.user, // Assuming 'user' is a populated object from your DB
         userName: item.user_name,
         rating: item.rating,
         comment: item.comment,
@@ -401,7 +405,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         images: item.images || [],
         verified: item.verified,
         createdAt: item.created_at,
-        date: "",
       }));
 
       set({ reviews, isLoading: false });

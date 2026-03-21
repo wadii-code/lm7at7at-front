@@ -1,6 +1,10 @@
 import type { Review } from '@/types';
-import { StarRating } from './starRating';
+import { StarRating } from './StarRating';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '@/store/authStore';
+import { useReviewStore } from '@/store/reviewStore';
+import { Button } from './ui/button';
+import { Trash2 } from 'lucide-react';
 
 interface ReviewListProps {
   reviews: Review[];
@@ -15,6 +19,14 @@ function formatReviewDate(dateString: string) {
 }
 
 export function ReviewList({ reviews }: ReviewListProps) {
+  const { user, token } = useAuthStore();
+  const { deleteReview } = useReviewStore();
+
+  const handleDelete = async (reviewId: string) => {
+    if (window.confirm('Are you sure you want to delete this review?')) {
+      await deleteReview(reviewId, token || '');
+    }
+  };
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -41,11 +53,21 @@ export function ReviewList({ reviews }: ReviewListProps) {
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-gray-800">{review.user.name}</h4>
               <span className="text-sm text-gray-500">
-                {formatReviewDate(String(review.created_at))}
+                {formatReviewDate(String(review.createdAt))}
               </span>
             </div>
             <StarRating rating={review.rating} size={16} className="my-2" />
             <p className="text-gray-600 leading-relaxed">{review.comment}</p>
+            {user?.isAdmin && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="mt-2 text-red-500 hover:text-red-700"
+                onClick={() => handleDelete(review.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </motion.div>
       ))}

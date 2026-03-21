@@ -39,17 +39,16 @@ export interface Collection {
 }
 
 export interface Review {
-  user: any;
-  created_at(created_at: any): import("react").ReactNode;
   id: string;
   productId: string;
+  user: User; // Or a more specific user type
   userName: string;
   rating: number;
   comment: string;
   commentAr: string;
-  date: string;
   images?: string[];
   verified: boolean;
+  createdAt: string;
 }
 
 export interface Order {

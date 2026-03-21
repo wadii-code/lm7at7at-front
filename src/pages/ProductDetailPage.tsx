@@ -19,7 +19,7 @@ import { useReviewStore } from '@/store/reviewStore';
 import { ProductCard } from '@/components/ProductCard';
 import { ReviewList } from '@/components/ReviewList';
 import { ReviewForm } from '@/components/ReviewForm';
-import { StarRating } from '@/components/starRating';
+import { StarRating } from '@/components/StarRating';
 import { toast } from 'sonner';
 
 export function ProductDetailPage() {
