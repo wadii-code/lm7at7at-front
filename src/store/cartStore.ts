@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product, CartItem } from '@/types';
+import { toast } from 'sonner';
 
 interface CartState {
   items: CartItem[];
@@ -35,7 +36,13 @@ export const useCartStore = create<CartState>()(
               item.selectedColor === color
           );
 
+          const stock = product.stockQuantity || 0;
+
           if (existingItem) {
+            if (existingItem.quantity >= stock) {
+              toast.error(`Only ${stock} items available in stock.`);
+              return state; // Do not update if stock limit is reached
+            }
             return {
               items: state.items.map((item) =>
                 item.id === product.id &&
@@ -45,6 +52,11 @@ export const useCartStore = create<CartState>()(
                   : item
               ),
             };
+          }
+
+          if (stock < 1) {
+            toast.error(`This item is out of stock.`);
+            return state; // Do not add if out of stock
           }
 
           const cartItem: CartItem = {
@@ -72,7 +84,24 @@ export const useCartStore = create<CartState>()(
       },
 
       updateQuantity: (productId, size, color, quantity) => {
-        if (quantity <= 0) {
+        const itemToUpdate = get().items.find(
+          (item) =>
+            item.id === productId &&
+            item.selectedSize === size &&
+            item.selectedColor === color
+        );
+
+        if (!itemToUpdate) return; // Should not happen, but good practice
+
+        const stock = itemToUpdate.stockQuantity || 0;
+        let newQuantity = quantity;
+
+        if (quantity > stock) {
+          toast.error(`Only ${stock} items available in stock.`);
+          newQuantity = stock; // Cap quantity at stock level
+        }
+
+        if (newQuantity <= 0) {
           get().removeItem(productId, size, color);
           return;
         }
@@ -82,7 +111,7 @@ export const useCartStore = create<CartState>()(
             item.id === productId &&
             item.selectedSize === size &&
             item.selectedColor === color
-              ? { ...item, quantity }
+              ? { ...item, quantity: newQuantity }
               : item
           ),
         }));

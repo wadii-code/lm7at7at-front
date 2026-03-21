@@ -14,7 +14,7 @@ interface AuthState {
   
   // Actions
   signup: (name: string, email: string, password: string) => Promise<boolean>;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; role: 'admin' | 'customer' | null }>;
   logout: () => void;
   isAdmin: () => boolean;
   updateUser: (payload: { name: string; oldPassword?: string; newPassword?: string }) => Promise<boolean>;
@@ -53,11 +53,12 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false, 
             error: null 
           });
-          return true;
+          // Return success and the user's role for redirection
+          return { success: true, role: data.user.is_admin ? 'admin' : 'customer' };
         } catch (err: any) {
           const errorMessage = err.response?.data?.message || 'Invalid credentials or server error.';
           set({ isLoading: false, error: errorMessage, isAuthenticated: false, user: null, token: null });
-          return false;
+          return { success: false, role: null };
         }
       },
 
@@ -66,7 +67,9 @@ export const useAuthStore = create<AuthState>()(
       },
 
       isAdmin: () => {
-        return get().user?.isAdmin ?? false;
+        const user = get().user;
+        // The user object from the backend has `is_admin` (snake_case)
+        return user ? (user as any).is_admin === true : false;
       },
 
       updateUser: async (payload) => {

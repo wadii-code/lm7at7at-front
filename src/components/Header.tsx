@@ -23,7 +23,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const { getTotalItems, setCartOpen } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, isAdmin } = useAuthStore();
 
   const totalItems = getTotalItems();
   const wishlistCount = wishlistItems.length;
@@ -176,6 +176,12 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link to="/profile">Profile</Link>
                     </DropdownMenuItem>
+                    {isAdmin() && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => logout()}>
                       Log out
                     </DropdownMenuItem>

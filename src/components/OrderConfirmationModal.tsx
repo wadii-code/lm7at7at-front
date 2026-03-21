@@ -14,7 +14,7 @@ interface OrderConfirmationModalProps {
 }
 
 export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationModalProps) {
-  const { addOrder } = useOrderStore();
+  const { addOrder } = useOrderStore() as any;
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -23,9 +23,14 @@ export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationMod
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!customerInfo.name || !customerInfo.phone || !customerInfo.address) {
       toast.error('الرجاء ملء جميع الحقول');
+      return;
+    }
+
+    if (customerInfo.phone.trim().length !== 10 || !/^\d{10}$/.test(customerInfo.phone.trim())) {
+      toast.error('الرجاء إدخال رقم هاتف صحيح مكون من 10 أرقام');
       return;
     }
 
@@ -38,11 +43,18 @@ export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationMod
       date: new Date().toISOString(),
       status: 'pending',
     };
-    addOrder(newOrder);
-    toast.success('تم استلام طلبك بنجاح!');
-    clearCart();
+    
+    const success = await addOrder(newOrder);
+    
     setIsSubmitting(false);
-    onClose();
+    
+    if (success) {
+      toast.success('تم استلام طلبك بنجاح!');
+      clearCart();
+      onClose();
+    } else {
+      toast.error('فشل في إرسال الطلب، يرجى المحاولة مرة أخرى');
+    }
   };
 
   return (

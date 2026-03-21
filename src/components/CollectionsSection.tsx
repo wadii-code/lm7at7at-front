@@ -1,10 +1,25 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useCollectionStore } from '@/store/collectionStore';
+import React from 'react';
 
 export function CollectionsSection() {
   const { collections, getRealProductCount } = useCollectionStore();
   
+  const [realCounts, setRealCounts] = React.useState<Record<string, number>>({});
+
+  React.useEffect(() => {
+    const fetchCounts = async () => {
+      const counts: Record<string, number> = {};
+      for (const collection of collections) {
+        const category = collection.href.replace('/products/', '');
+        counts[category] = await getRealProductCount(category);
+      }
+      setRealCounts(counts);
+    };
+    fetchCounts();
+  }, [collections, getRealProductCount]);
+
   return (
     <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-page-bg">
       <div className="max-w-7xl mx-auto">
@@ -26,7 +41,7 @@ export function CollectionsSection() {
           {collections.map((collection, index) => {
             // Get real product count for this collection
             const category = collection.href.replace('/products/', '');
-            const realCount = getRealProductCount(category);
+            const realCount = realCounts[category] || 0;
             
             return (
               <motion.a

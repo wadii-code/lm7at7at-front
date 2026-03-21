@@ -232,10 +232,10 @@ export function ProductDetailPage() {
             </div>
 
             {/* Color Selection */}
-            {product.colors.length > 0 && (
+            {product.colors && product.colors.length > 0 ? (
               <div>
                 <label className="block font-bold text-gray-900 mb-3">
-                  Color: <span className="text-primary">{selectedColor}</span>
+                  Color: <span className="text-primary">{selectedColor || 'Select color'}</span>
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {product.colors.map((color) => (
@@ -252,6 +252,10 @@ export function ProductDetailPage() {
                     />
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="text-gray-500 text-sm p-4 bg-gray-50 rounded-lg">
+                No color options available for this product
               </div>
             )}
 

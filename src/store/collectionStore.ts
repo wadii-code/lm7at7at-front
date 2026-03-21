@@ -22,7 +22,7 @@ interface CollectionState {
   deleteCollection: (id: string) => Promise<boolean>;
   getCollectionById: (id: string) => Collection | undefined;
   updateProductCount: (category: string, count: number) => void;
-  getRealProductCount: (category: string) => number;
+  getRealProductCount: (category: string) => Promise<number>;
 }
 
 const uploadImage = async (file: File): Promise<string> => {
@@ -222,10 +222,25 @@ export const useCollectionStore = create<CollectionState>()(
         }
       },
 
-      getRealProductCount: (category) => {
-        return get().collections.find(c => c.href.includes(category))?.productCount || 0;
-      },
-    }),
+  getRealProductCount: async (category) => {
+    try {
+      const { count, error } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('category', category.replace('/products/', ''));
+
+      if (error) {
+        console.error('Error fetching product count:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error in getRealProductCount:', error);
+      return 0;
+    }
+  }
+}),
     { 
       name: 'collection-storage',
       // Only persist non-sensitive data

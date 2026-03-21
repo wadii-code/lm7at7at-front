@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import axios from 'axios';
 import type { CartItem } from '@/types';
+import { useAuthStore } from './authStore';
 
 interface CustomerInfo {
   name: string;
@@ -24,8 +25,9 @@ interface OrderState {
   orders: Order[];
   isLoading: boolean;
   error: string | null;
-  
+
   fetchOrders: () => Promise<void>;
+  fetchDeliveredOrders: () => Promise<void>;
   addOrder: (order: Order) => Promise<boolean>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<boolean>;
   removeOrder: (orderId: string) => Promise<boolean>;
@@ -55,112 +57,141 @@ export const useOrderStore = create<OrderState>()(
 
       fetchOrders: async () => {
         set({ isLoading: true, error: null });
-        
         try {
-          if (!isSupabaseConfigured() || !supabase) {
-            set({ isLoading: false });
+          const token = useAuthStore.getState().token;
+
+          if (!token) {
+            set({ orders: [], isLoading: false });
             return;
           }
 
-          const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
+          const response = await axios.get('http://localhost:3001/api/orders', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-          if (error) throw error;
+          const orders = (response.data || []).map(transformOrder);
+          set({ orders, isLoading: false });
 
-          const orders = (data || []).map(transformOrder);
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || error.message,
+            isLoading: false,
+          });
+        }
+      },
+
+      fetchDeliveredOrders: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const token = useAuthStore.getState().token;
+          if (!token) {
+            set({ orders: [], isLoading: false });
+            return;
+          }
+          const response = await axios.get('http://localhost:3001/api/orders?status=delivered', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const orders = (response.data || []).map(transformOrder);
           set({ orders, isLoading: false });
         } catch (error: any) {
-          console.error('Error fetching orders:', error);
-          set({ error: error.message, isLoading: false });
+          set({
+            error: error.response?.data?.message || error.message,
+            isLoading: false,
+          });
         }
       },
 
       addOrder: async (order) => {
+        set({ isLoading: true });
         try {
-          if (!isSupabaseConfigured() || !supabase) {
-            set((state) => ({
-              orders: [order, ...state.orders],
-            }));
-            return true;
-          }
+          const token = useAuthStore.getState().token;
 
-          const { error } = await supabase.from('orders').insert({
-            customer_name: order.customer.name,
-            customer_phone: order.customer.phone,
-            customer_email: order.customer.email || '',
-            address: order.customer.address,
-            city: order.customer.city || '',
-            items: order.items,
-            total: order.total,
-            status: order.status,
-          });
+          const response = await axios.post(
+            'http://localhost:3001/api/orders',
+            order,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-          if (error) throw error;
+          const newOrder = transformOrder(response.data);
 
           set((state) => ({
-            orders: [order, ...state.orders],
+            orders: [newOrder, ...state.orders],
+            isLoading: false,
           }));
+
           return true;
-        } catch (error) {
-          console.error('Error adding order:', error);
+
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || error.message,
+            isLoading: false,
+          });
           return false;
         }
       },
 
       updateOrderStatus: async (orderId, status) => {
+        set({ isLoading: true });
         try {
-          if (!isSupabaseConfigured() || !supabase) {
-            set((state) => ({
-              orders: state.orders.map((order) =>
-                order.id === orderId ? { ...order, status } : order
-              ),
-            }));
-            return true;
+          const token = useAuthStore.getState().token;
+
+          if (!token) {
+            set({ error: 'Authentication token not found.', isLoading: false });
+            return false;
           }
 
-          const { error } = await supabase
-            .from('orders')
-            .update({ status })
-            .eq('id', orderId);
+          const { data } = await axios.patch(
+            `http://localhost:3001/api/orders/${orderId}/status`,
+            { status },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-          if (error) throw error;
+          const updatedOrder = transformOrder(data);
 
           set((state) => ({
             orders: state.orders.map((order) =>
-              order.id === orderId ? { ...order, status } : order
+              order.id === updatedOrder.id ? updatedOrder : order
             ),
+            isLoading: false,
           }));
+
           return true;
-        } catch (error) {
-          console.error('Error updating order status:', error);
+
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || error.message,
+            isLoading: false,
+          });
           return false;
         }
       },
 
       removeOrder: async (orderId) => {
+        set({ isLoading: true });
         try {
-          if (!isSupabaseConfigured() || !supabase) {
-            set((state) => ({
-              orders: state.orders.filter((order) => order.id !== orderId),
-            }));
-            return true;
+          const token = useAuthStore.getState().token;
+
+          if (!token) {
+            set({ error: 'Authentication token not found.', isLoading: false });
+            return false;
           }
 
-          const { error } = await supabase
-            .from('orders')
-            .delete()
-            .eq('id', orderId);
-
-          if (error) throw error;
+          await axios.delete(`http://localhost:3001/api/orders/${orderId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
           set((state) => ({
             orders: state.orders.filter((order) => order.id !== orderId),
+            isLoading: false,
           }));
+
           return true;
-        } catch (error) {
-          console.error('Error removing order:', error);
+
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || error.message,
+            isLoading: false,
+          });
           return false;
         }
       },

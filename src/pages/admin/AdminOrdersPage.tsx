@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { useOrderStore } from '@/store/orderStore';
@@ -17,10 +16,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function AdminOrdersPage() {
-  const { orders, updateOrderStatus, removeOrder } = useOrderStore();
+  const { orders, fetchOrders, updateOrderStatus, removeOrder } = useOrderStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Order['status'] | 'all'>('all');
+const [statusFilter, setStatusFilter] = useState<Order['status'] | 'all'>('pending');
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -29,8 +32,8 @@ export function AdminOrdersPage() {
         order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.customer.phone.includes(searchQuery);
 
-      const matchesStatus =
-        statusFilter === 'all' || order.status === statusFilter;
+                const matchesStatus =
+                statusFilter === 'all' || (order.status === statusFilter && order.status !== 'delivered');
 
       return matchesSearch && matchesStatus;
     });
@@ -43,13 +46,12 @@ export function AdminOrdersPage() {
   const handleDeleteOrder = async () => {
     if (!deleteOrderId) return;
 
-    try {
-      await axios.delete(`/api/orders/${deleteOrderId}`);
-      removeOrder(deleteOrderId);
+    const success = await removeOrder(deleteOrderId);
+
+    if (success) {
       toast.success('Order deleted successfully');
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      toast.error('Failed to delete order');
+    } else {
+      toast.error('Failed to delete order. You may not have the required permissions.');
     }
     setDeleteOrderId(null);
   };
@@ -75,10 +77,10 @@ export function AdminOrdersPage() {
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered (View in Delivered Orders)</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
         </div>
 
         <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -105,7 +107,7 @@ export function AdminOrdersPage() {
                   <td className="p-3 text-sm text-gray-700">{order.customer.name}</td>
                   <td className="p-3 text-sm text-gray-700">{order.customer.phone}</td>
                   <td className="p-3 text-sm text-gray-700">{order.customer.address}</td>
-                  <td className="p-3 text-sm text-gray-700">{order.items.length}</td>
+                  <td className="p-3 text-sm text-gray-700">{order.items.reduce((acc, item) => acc + item.quantity, 0)}</td>
                   <td className="p-3 text-sm text-gray-700">DA {order.total.toFixed(2)}</td>
                   <td className="p-3 text-sm text-gray-700">{new Date(order.date).toLocaleDateString()}</td>
                   <td className="p-3 text-sm">

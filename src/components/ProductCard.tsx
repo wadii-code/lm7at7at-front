@@ -20,6 +20,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    if (!product.id) return;
+
+    if (product.stockQuantity === 0) {
+      toast.error('This product is out of stock');
+      return;
+    }
+    
     // Add with default size and color
     const defaultSize = product.sizes[0] || 'M';
     const defaultColor = product.colors[0]?.name || '';
@@ -28,16 +35,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     toast.success(`تمت إضافة ${product.nameAr} إلى السلة`);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!product.id) return;
+    
     toggleWishlist(product.id);
     
-    if (isInWishlist(product.id)) {
-      toast.success('تمت إزالة المنتج من المفضلة');
-    } else {
-      toast.success('تمت إضافة المنتج إلى المفضلة');
-    }
+    const isCurrentlyInWishlist = isInWishlist(product.id);
+    toast.success(
+      isCurrentlyInWishlist
+        ? `تمت إزالة ${product.nameAr} من قائمة الرغبات`
+        : `تمت إضافة ${product.nameAr} إلى قائمة الرغبات`
+    );
   };
 
   return (
@@ -74,20 +86,26 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                   الأكثر مبيعاً
                 </span>
               )}
+              {product.stockQuantity === 0 && (
+                <span className="bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Out of stock
+                </span>
+              )}
             </div>
 
             {/* Quick Actions */}
             <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                onClick={handleWishlist}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  isInWishlist(product.id)
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Heart className="w-5 h-5" fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
-              </button>
+            onClick={handleWishlistToggle}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 ${
+              product.id && isInWishlist(product.id)
+                ? 'bg-red-500 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+            aria-label="Toggle Wishlist"
+          >
+            <Heart className="w-5 h-5" fill={product.id && isInWishlist(product.id) ? 'currentColor' : 'none'} />
+          </button>
               <button
                 className="w-10 h-10 bg-white text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
               >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { motion } from 'framer-motion';
@@ -7,21 +7,10 @@ import { Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, isLoading, error, isAuthenticated, isAdmin } = useAuthStore();
+  const { login, isLoading, error } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      // if the user is a nigga,
-      //  welcome him,
-      //  otherwise kick his little ass
-      const redirectPath = isAdmin() ? '/admin/dashboard' : '/';
-      toast.success(`Welcome back! Redirecting...`);
-      navigate(redirectPath, { replace: true });
-    }
-  }, [isAuthenticated, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,12 +19,15 @@ export function LoginPage() {
       return;
     }
 
-    const success = await login(email, password);
+    const { success, role } = await login(email, password);
 
-    if (!success) {
+    if (success) {
+      toast.success('Login successful! Redirecting...');
+      const redirectPath = role === 'admin' ? '/admin' : '/';
+      navigate(redirectPath, { replace: true });
+    } else {
       toast.error(error || 'Login failed. Please check your credentials.');
     }
-    // Successful login is handled by the useEffect
   };
 
   return (
