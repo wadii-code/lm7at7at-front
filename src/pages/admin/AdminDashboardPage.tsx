@@ -5,12 +5,11 @@ import {
   Package, 
   ShoppingCart, 
   TrendingUp, 
-  Users,
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
 import { useProductStore } from '@/store/productStore';
-import { StarRating } from '@/components/StarRating';
+
 
 export function AdminDashboardPage() {
   const { products } = useProductStore();
@@ -20,7 +19,6 @@ export function AdminDashboardPage() {
   const totalStock = products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0);
   const lowStockProducts = products.filter((p) => (p.stockQuantity || 0) < 10).length;
   
-  const averageRating = products.length > 0 ? products.reduce((sum, p) => sum + p.rating, 0) / products.length : 0;
 
   const stats = [
     {
@@ -47,14 +45,7 @@ export function AdminDashboardPage() {
       changeType: 'negative' as const,
       color: 'bg-orange-500',
     },
-    {
-      title: 'متوسط التقييم',
-      value: averageRating.toFixed(1),
-      icon: Users,
-      change: '+0.3',
-      changeType: 'positive' as const,
-      color: 'bg-purple-500',
-    },
+
   ];
 
   const recentProducts = [...products]
@@ -75,7 +66,7 @@ export function AdminDashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -198,9 +189,7 @@ export function AdminDashboardPage() {
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
                   Stock
                 </th>
-                <th className="text-right py-3 px-4 font-medium text-gray-500">
-                  Rating
-                </th>
+
                 <th className="text-right py-3 px-4 font-medium text-gray-500">
                   Status
                 </th>
@@ -231,13 +220,7 @@ export function AdminDashboardPage() {
                       {product.stockQuantity}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1">
-                      <StarRating rating={product.rating} />
-                      <span className="font-bold">{product.rating.toFixed(1)}</span>
-                      <span className="text-gray-500">({product.reviewCount})</span>
-                    </div>
-                  </td>
+
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
