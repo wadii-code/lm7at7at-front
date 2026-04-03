@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useReviewStore } from '@/store/reviewStore';
-import { StarRating } from './starRating';
+import { StarRating } from './StarRating';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
