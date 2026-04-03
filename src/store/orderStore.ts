@@ -65,7 +65,7 @@ export const useOrderStore = create<OrderState>()(
             return;
           }
 
-          const response = await axios.get('http://localhost:3001/api/orders', {
+          const response = await axios.get('https://lm7at7at-back.vercel.app/api/orders', {
             headers: { Authorization: `Bearer ${token}` },
           });
 

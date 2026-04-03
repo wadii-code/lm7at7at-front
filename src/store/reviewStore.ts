@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Review } from '@/types';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'https://lm7at7at-back.vercel.app/api';
 
 interface ReviewState {
   reviews: Review[];

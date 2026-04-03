@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api/auth';
+const API_URL = 'https://lm7at7at-back.vercel.app/api/auth';
 
 interface AuthState {
   user: User | null;
