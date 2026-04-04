@@ -5,8 +5,6 @@ import {
   Heart, 
   Share2, 
   Truck, 
-  Shield, 
-  RotateCcw,
   ChevronRight,
   Minus,
   Plus
