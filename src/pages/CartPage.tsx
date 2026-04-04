@@ -201,7 +201,7 @@ export function CartPage() {
                       {shippingCost === 0 ? (
                         <span className="text-green-600">مجاني</span>
                       ) : (
-                        `${shippingCost.toFixed(2)} درهم`
+                        `${shippingCost} درهم`
                       )}
                     </span>
                   </div>
