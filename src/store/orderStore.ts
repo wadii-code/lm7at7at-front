@@ -88,7 +88,7 @@ export const useOrderStore = create<OrderState>()(
             set({ orders: [], isLoading: false });
             return;
           }
-          const response = await axios.get('http://localhost:3001/api/orders?status=delivered', {
+          const response = await axios.get('https://lm7at7at-back.vercel.app/api/orders?status=delivered', {
             headers: { Authorization: `Bearer ${token}` },
           });
           const orders = (response.data || []).map(transformOrder);
@@ -114,7 +114,7 @@ export const useOrderStore = create<OrderState>()(
           };
 
           const response = await axios.post(
-            'http://localhost:3001/api/orders',
+            'https://lm7at7at-back.vercel.app/api/orders',
             orderData,
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -148,7 +148,7 @@ export const useOrderStore = create<OrderState>()(
           }
 
           const { data } = await axios.patch(
-            `http://localhost:3001/api/orders/${orderId}/status`,
+            `https://lm7at7at-back.vercel.app/api/orders/${orderId}/status`,
             { status },
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -183,7 +183,7 @@ export const useOrderStore = create<OrderState>()(
             return false;
           }
 
-          await axios.delete(`http://localhost:3001/api/orders/${orderId}`, {
+          await axios.delete(`https://lm7at7at-back.vercel.app/api/orders/${orderId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
