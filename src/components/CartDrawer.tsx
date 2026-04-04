@@ -18,8 +18,6 @@ export function CartDrawer() {
 
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
-  const shippingCost = totalPrice > 500 ? 0 : 30;
-  const finalTotal = totalPrice + shippingCost;
 
   return (
     <Sheet open={isOpen} onOpenChange={setCartOpen}>
@@ -147,25 +145,11 @@ export function CartDrawer() {
                   <span className="text-gray-600">المجموع الفرعي</span>
                   <span>{totalPrice.toFixed(2)} درهم</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">الشحن</span>
-                  <span>
-                    {shippingCost === 0 ? (
-                      <span className="text-green-600">مجاني</span>
-                    ) : (
-                      `${shippingCost.toFixed(2)} درهم`
-                    )}
-                  </span>
-                </div>
-                {shippingCost === 0 && (
-                  <p className="text-xs text-green-600">
-                    🎉 لقد حصلت على شحن مجاني!
-                  </p>
-                )}
+
                 <div className="border-t pt-2 flex items-center justify-between">
                   <span className="font-bold">الإجمالي</span>
                   <span className="text-xl font-bold text-primary">
-                    {finalTotal.toFixed(2)} درهم
+                    {totalPrice.toFixed(2)} درهم
                   </span>
                 </div>
               </div>

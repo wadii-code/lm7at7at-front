@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Instagram, MapPin, Phone, Mail, CreditCard } from 'lucide-react';
+import { Instagram, MapPin, Phone, Mail } from 'lucide-react';
 
 export function Footer() {
   const categories = [
@@ -24,7 +24,7 @@ export function Footer() {
   
 
   return (
-    <footer id="contact" className="bg-announcement text-white">
+    <footer id="contact" className="bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Categories */}
@@ -83,16 +83,12 @@ export function Footer() {
               <li className="flex items-start gap-2 text-sm text-gray-300">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>
-                  Maarouf District, Zerktouni Street,
-                  <br />
-                  2nd Floor, No. 25,
-                  <br />
-                  Casablanca, Morocco
+                  Morocco
                 </span>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-300">
                 <Phone className="w-4 h-4 flex-shrink-0" />
-                <span>0609399442</span>
+                <span>+212664772153</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-300">
                 <Mail className="w-4 h-4 flex-shrink-0" />
@@ -126,9 +122,6 @@ export function Footer() {
             
             <h3 className="text-lg font-bold mb-4">Payment Methods</h3>
             <div className="flex items-center gap-2">
-              <div className="w-12 h-8 bg-white/10 rounded flex items-center justify-center">
-                <CreditCard className="w-5 h-5" />
-              </div>
               <div className="w-12 h-8 bg-white/10 rounded flex items-center justify-center text-xs font-bold">
                 CASH
               </div>
