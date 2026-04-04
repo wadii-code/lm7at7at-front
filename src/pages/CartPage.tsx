@@ -29,7 +29,7 @@ export function CartPage() {
 
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
-  const shippingCost = totalPrice > 500 ? 0 : 30;
+  const shippingCost = 0;
   const finalTotal = totalPrice + shippingCost;
 
   const handleCheckout = () => {
