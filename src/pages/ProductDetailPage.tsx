@@ -303,14 +303,6 @@ export function ProductDetailPage() {
                 <Truck className="w-6 h-6 text-primary" />
                 <span className="text-gray-700">Free & Fast Shipping</span>
               </div>
-              <div className="flex items-center gap-3">
-                <Shield className="w-6 h-6 text-primary" />
-                <span className="text-gray-700">Secure Payment</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <RotateCcw className="w-6 h-6 text-primary" />
-                <span className="text-gray-700">30-Day Return Policy</span>
-              </div>
             </div>
           </motion.div>
         </div>

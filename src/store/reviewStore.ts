@@ -18,6 +18,19 @@ interface ReviewState {
   deleteReview: (reviewId: string, token: string) => Promise<boolean>;
 }
 
+const transformReview = (dbReview: any): Review => ({
+  id: dbReview.id,
+  productId: dbReview.product_id || dbReview.productId,
+  user: dbReview.user,
+  userName: dbReview.user_name || dbReview.userName,
+  rating: dbReview.rating,
+  comment: dbReview.comment,
+  commentAr: dbReview.comment_ar || dbReview.commentAr,
+  images: dbReview.images || [],
+  verified: dbReview.verified,
+  createdAt: dbReview.created_at || dbReview.createdAt,
+});
+
 export const useReviewStore = create<ReviewState>((set) => ({
   reviews: [],
   isLoading: false,
@@ -28,8 +41,8 @@ export const useReviewStore = create<ReviewState>((set) => ({
     try {
       const { data } = await axios.get(`${API_URL}/reviews/${productId}`);
 
-      // Assuming the API returns reviews with a populated user object
-      set({ reviews: data, isLoading: false });
+      const reviews = (data || []).map(transformReview);
+      set({ reviews, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       set({ isLoading: false, error: errorMessage });
@@ -49,8 +62,9 @@ export const useReviewStore = create<ReviewState>((set) => ({
         }
       );
 
+      const newReview = transformReview(data);
       set((state) => ({
-        reviews: [data, ...state.reviews],
+        reviews: [newReview, ...state.reviews],
       }));
 
       return true;

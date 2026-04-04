@@ -10,8 +10,29 @@ interface ReviewListProps {
   reviews: Review[];
 }
 
-function formatReviewDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('en-US', {
+function formatReviewDate(dateString?: string) {
+  if (!dateString || dateString === 'undefined') {
+    return 'Recently';
+  }
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    // Check if it's a timestamp in numeric string format
+    const timestamp = Number(dateString);
+    if (!isNaN(timestamp)) {
+      const dateFromTimestamp = new Date(timestamp);
+      if (!isNaN(dateFromTimestamp.getTime())) {
+        return dateFromTimestamp.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      }
+    }
+    return 'Recently';
+  }
+
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -53,7 +74,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-gray-800">{review.user.name}</h4>
               <span className="text-sm text-gray-500">
-                {formatReviewDate(String(review.createdAt))}
+                {formatReviewDate(review.createdAt)}
               </span>
             </div>
             <StarRating rating={review.rating} size={16} className="my-2" />
