@@ -2,6 +2,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useCollectionStore } from '@/store/collectionStore';
 import React from 'react';
+import { Link } from 'react-router-dom';
+
+const MotionLink = motion(Link);
 
 export function CollectionsSection() {
   const { collections, getRealProductCount } = useCollectionStore();
@@ -44,9 +47,9 @@ export function CollectionsSection() {
             const realCount = realCounts[category] || 0;
             
             return (
-              <motion.a
+              <MotionLink
                 key={collection.id}
-                href={collection.href}
+                to={collection.href}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -77,7 +80,7 @@ export function CollectionsSection() {
                     <ArrowLeft className="w-4 h-4 transform rotate-180 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
-              </motion.a>
+              </MotionLink>
             );
           })}
         </div>
