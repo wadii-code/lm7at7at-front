@@ -218,10 +218,10 @@ export function ProductDetailPage() {
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${
-                      selectedSize === size
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-primary'
-                    }`}
+              selectedSize === size
+                ? 'bg-primary text-white border-primary'
+                : 'bg-card text-card-foreground border-border hover:border-primary'
+            }`}
                   >
                     {size}
                   </button>
@@ -241,10 +241,10 @@ export function ProductDetailPage() {
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
                       className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                        selectedColor === color.name
-                          ? 'border-primary scale-110 shadow-md'
-                          : 'border-gray-200'
-                      }`}
+              selectedColor === color.name
+                ? 'border-primary scale-110 shadow-md'
+                : 'border-border'
+            }`}
                       style={{ backgroundColor: color.hex }}
                       title={color.name}
                     />

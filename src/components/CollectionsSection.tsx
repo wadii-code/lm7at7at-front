@@ -34,7 +34,7 @@ export function CollectionsSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-10"
         >
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h2 className="text-2xl md:text-3xl font-bold text-white-900">
             Collections
           </h2>
         </motion.div>

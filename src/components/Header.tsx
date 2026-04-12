@@ -64,7 +64,7 @@ export function Header() {
           <div className="flex-1 flex justify-start">
             <div className="hidden md:flex items-center">
               <form onSubmit={handleSearch} className="relative w-full max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search for a product..."

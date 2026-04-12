@@ -50,10 +50,6 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        surface: "#ffffff",
-        "page-bg": "#f5f5f5",
-        announcement: "#1a1a1a",
-        gold: "#c9a227",
         "gold-light": "#e8d5a3",
       },
       borderRadius: {

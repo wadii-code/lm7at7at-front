@@ -15,9 +15,9 @@ const containerVariants: Variants = {
 };
 
 const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { x: -20, opacity: 0 },
   visible: {
-    y: 0,
+    x: 0,
     opacity: 1,
     transition: {
       type: 'spring',
@@ -28,54 +28,48 @@ const itemVariants: Variants = {
 };
 
 export function HeroSection() {
+  
   return (
-    <section className="relative w-full h-[80vh] min-h-[600px] flex items-center justify-center bg-gray-900 text-white overflow-hidden">
-      {/* Background Images */}
-      <div className="absolute inset-0 z-0 flex">
-        <div
-          className="w-1/2 h-full bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/1.jpeg')" }}
-        />
-        <div
-          className="w-1/2 h-full bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/2.jpeg')" }}
-        />
+    <section className="relative w-full h-[80vh] min-h-[600px] overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${'/images/omertamask.png'})` }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 z-10 bg-black/60" />
-
-      <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+      <motion.div
+        className="relative z-10 h-full flex flex-col items-end justify-center text-left text-white p-8 md:p-16 lg:p-24"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.h1
+          variants={itemVariants}
+          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight max-w-3xl"
         >
-          <motion.h1
-            variants={itemVariants}
-            className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter leading-tight"
-          >
-            Style Redefined. Quality Perfected.
-          </motion.h1>
-          <motion.p
-            variants={itemVariants}
-            className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-300"
-          >
-            Discover our exclusive collection of high-quality T-shirts, crafted for comfort and designed to make a statement.
-          </motion.p>
-          <motion.div variants={itemVariants} className="mt-10">
-            <Link to="/products">
-              <Button
-                size="lg"
-                className="bg-white text-gray-900 hover:bg-gray-200 font-bold text-lg px-8 py-6 rounded-full transition-transform transform hover:scale-105 shadow-lg"
-              >
-                Explore the Collection
-                <ArrowRight className="w-5 h-5 ml-3" />
-              </Button>
-            </Link>
-          </motion.div>
+          Style Redefined
+          <br />
+          <span className="text-gold">Confidence Unleashed</span>
+        </motion.h1>
+        <motion.p
+          variants={itemVariants}
+          className="mt-4 max-w-xl text-lg md:text-xl text-gray-300"
+        >
+          Explore a curated collection where timeless design meets contemporary fashion.
+        </motion.p>
+        <motion.div variants={itemVariants} className="mt-8">
+          <Link to="/products">
+            <Button
+              size="lg"
+              className="bg-white text-gray-900 hover:bg-gray-200 font-semibold rounded-md shadow-lg group"
+            >
+              Shop Now
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

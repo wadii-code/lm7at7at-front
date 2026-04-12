@@ -60,9 +60,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ duration: 0.4, delay: index * 0.1 }}
     >
       <Link to={`/product/${product.id}`}>
-        <div className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 group">
+        <div className="bg-card text-card-foreground rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 group">
           {/* Image */}
-          <div className="relative aspect-square bg-gray-50 overflow-hidden">
+          <div className="relative aspect-square bg-muted/50 overflow-hidden">
             <img
               src={product.thumbnail || product.images[0]}
               alt={product.nameAr}
@@ -100,14 +100,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 ${
               product.id && isInWishlist(product.id)
                 ? 'bg-red-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
+                : 'bg-card text-card-foreground hover:bg-muted'
             }`}
             aria-label="Toggle Wishlist"
           >
             <Heart className="w-5 h-5" fill={product.id && isInWishlist(product.id) ? 'currentColor' : 'none'} />
           </button>
               <button
-                className="w-10 h-10 bg-white text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                className="w-10 h-10 bg-card text-card-foreground rounded-full flex items-center justify-center hover:bg-muted transition-colors"
               >
                 <Eye className="w-5 h-5" />
               </button>
@@ -128,12 +128,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Content */}
           <div className="p-4">
             {/* Category */}
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
               {product.category}
             </p>
 
             {/* Title */}
-            <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 min-h-[48px]">
+            <h3 className="font-bold text-card-foreground mb-2 line-clamp-2 min-h-[48px]">
               {product.nameAr}
             </h3>
 
@@ -142,7 +142,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               <div className="flex items-center gap-1 mb-2">
                 <span className="text-yellow-400">⭐</span>
                 <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   ({product.reviewCount})
                 </span>
               </div>
@@ -154,7 +154,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 {product.price.toFixed(2)} درهم
               </span>
               {product.originalPrice && (
-                <span className="text-sm text-gray-400 line-through">
+                <span className="text-sm text-muted-foreground line-through">
                   {product.originalPrice.toFixed(2)} درهم
                 </span>
               )}
@@ -165,13 +165,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               {product.sizes.slice(0, 4).map((size) => (
                 <span
                   key={size}
-                  className="text-xs bg-gray-100 px-2 py-1 rounded"
+                  className="text-xs bg-muted px-2 py-1 rounded"
                 >
                   {size}
                 </span>
               ))}
               {product.sizes.length > 4 && (
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                <span className="text-xs bg-muted px-2 py-1 rounded">
                   +{product.sizes.length - 4}
                 </span>
               )}
